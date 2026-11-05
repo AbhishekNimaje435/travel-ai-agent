@@ -2,6 +2,17 @@
 
 from datetime import date, timedelta
 
+def load_api_key_from_streamlit_secrets() -> None:
+    """Copy GROQ_API_KEY from Streamlit secrets to environment variables (needed on Streamlit Cloud)."""
+    try:
+        if "GROQ_API_KEY" in st.secrets and not os.getenv("GROQ_API_KEY"):
+            os.environ["GROQ_API_KEY"] = st.secrets["GROQ_API_KEY"]
+    except Exception:
+        pass
+
+
+load_api_key_from_streamlit_secrets()
+
 import streamlit as st
 
 from agent.travel_agent import run_travel_agent
@@ -51,7 +62,7 @@ with st.form("trip_form"):
         minimum_stars = st.slider("Minimum hotel stars", min_value=1, max_value=5, value=4)
     with col_budget:
         maximum_budget = st.number_input(
-            "Max hotel price per night (Rs)", min_value=500, max_value=20000, value=5000, step=500
+            "Max hotel price per night (Rs)", min_value=500, max_value=20000, value=7000, step=500
         )
 
     submit_button = st.form_submit_button("Plan my trip")
