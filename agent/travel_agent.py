@@ -17,77 +17,89 @@ from tools.weather_tool import get_weather_forecast
 load_dotenv()
 
 GROQ_MODEL_NAME = "openai/gpt-oss-20b"
+DEFAULT_TEMPERATURE = 0.2
 MAXIMUM_TOOL_ROUNDS = 8
 MAXIMUM_ITEMS_PER_TOOL_OUTPUT = 5
 GROQ_MAX_RETRIES = 5
 
-AVAILABLE_TOOLS = [
-    search_flights,
-    search_hotels,
-    search_places,
-    get_weather_forecast,
-    estimate_trip_budget,
-]
-TOOLS_BY_NAME = {tool.name: tool for tool in AVAILABLE_TOOLS}
+TOOLS_BY_NAME = {
+    "search_flights": search_flights,
+    "search_hotels": search_hotels,
+    "search_places": search_places,
+    "get_weather_forecast": get_weather_forecast,
+    "estimate_trip_budget": estimate_trip_budget,
+}
+ALL_TOOL_NAMES = list(TOOLS_BY_NAME.keys())
 
-# Keys in tool outputs that contain lists, which we shorten to save tokens
+TOOL_DESCRIPTIONS = {
+    "search_flights": "- search_flights: finds one-way flights between two cities, with cheapest and fastest options. Accepts travel_date.",
+    "search_hotels": "- search_hotels: finds hotels in a city, filtered by minimum stars and maximum price per night. Each hotel has an amenities list.",
+    "search_places": "- search_places: finds attractions in a city, filtered by type and minimum rating.",
+    "get_weather_forecast": "- get_weather_forecast: gives the daily forecast for a city between two dates.",
+    "estimate_trip_budget": "- estimate_trip_budget: calculates the total cost from flight price, hotel price per night, number of days, and daily local expense.",
+}
+
 LIST_KEYS_IN_TOOL_OUTPUT = ("matching_flights", "ranked_hotels", "ranked_places", "daily_forecast")
 
 
-def build_system_prompt() -> str:
-    """Create the system prompt with today's date so the agent can resolve relative dates."""
+def build_system_prompt(enabled_tool_names: list[str]) -> str:
+    """Create the system prompt with today's date and only the enabled tools."""
     today = date.today().isoformat()
+    tool_descriptions = "\n".join(TOOL_DESCRIPTIONS[tool_name] for tool_name in enabled_tool_names)
     return f"""You are an expert Indian travel planner. Today's date is {today}.
 
-Your job is to plan a complete trip using the tools you have:
-- search_flights: finds flights between two cities and gives the cheapest and fastest option.
-- search_hotels: finds hotels in a city, filtered by stars and price.
-- search_places: finds attractions in a city, filtered by type and rating.
-- get_weather_forecast: gives the daily forecast for a city between two dates.
-- estimate_trip_budget: calculates the total cost from flight price, hotel price, and number of days.
+Tools enabled for this request:
+{tool_descriptions}
+Do not call any tool that is not in this list.
 
 Tool usage rules:
-1. Call each tool at most once for the same purpose. Do not repeat a tool call if you already have its result.
-2. As soon as you have the flight, hotel, places, weather, and budget data, stop calling tools and write the final answer.
-3. Never call a tool that is not needed for the trip plan.
+1. Call each tool at most once for the same purpose. Do not repeat a call if you already have its result.
+2. Stop calling tools as soon as you have the data you need, then write the final answer.
+3. For the outbound flight, call search_flights with source_city, destination_city, and travel_date.
+4. If the user asks for a return flight, call search_flights once more with source and destination swapped and travel_date set to the return date.
+5. Choose the flight by the user's preference: cheapest_flight for "cheapest", fastest_flight for "fastest".
+6. If the user lists attraction interests, call search_places once for each interest, using it as place_type. Otherwise call search_places without place_type.
 
 Answer rules:
-1. Use only the data returned by the tools. Never invent flights, hotels, places, prices, timings, or activities.
-2. Flights in the dataset are one-way. Do not call a flight "round-trip" unless you searched for the return flight too.
-3. Use the exact flight, hotel, and budget numbers from the tool output. Do not recalculate them yourself unless you show the calculation.
-4. Places have only a name, city, type, and rating. Do not describe activities (like boat rides or treks) that the tool did not provide. Just mention the name, type, and rating.
-5. Pick the cheapest flight unless the user asks for the fastest. Pick the top-rated hotel that meets the user's star and budget limits.
-6. If the user does not give dates, state the assumed dates clearly at the top of the answer.
-7. If a tool returns no data or an error, say so clearly and continue with what you have.
-8. Pass travel_date (YYYY-MM-DD) to search_flights. If date_match is "schedule", tell the user that flight times come from the dataset schedule and may differ from real bookings, and use the adjusted departure time in the itinerary.
-9. Never refuse to plan a trip because of dataset dates. Always plan for the dates the user requested.
-10. Do not repeat the same place on different days. Each place appears only once in the itinerary.
-11. If search_hotels returns closest alternatives instead of exact matches, clearly say that no hotel matched the exact filters and list the alternatives with their stars and price.
+1. Use only tool data. Never invent flights, hotels, places, prices, timings, or activities.
+2. Flights in the dataset are one-way. Do not call a flight round-trip unless both legs were searched.
+3. Travellers: flight cost = flight price × number of travellers × number of flights (2 if return flight is included). Hotel rooms = travellers divided by 2, rounded up. Local expense = daily amount per person × travellers × days.
+4. For estimate_trip_budget, pass flight_price as the total flight cost for all travellers and legs, hotel_price_per_night as hotel price × rooms, and daily_local_expense as the daily amount per person × travellers.
+5. Compare the final total with the user's total budget. If it is over budget, say so clearly and suggest one or two cheaper options. Never hide an over-budget total.
+6. If the user asked for hotel amenities, recommend only hotels whose amenities list contains every requested amenity. If none match, say which amenity is missing and show the closest option, as described in rule 10.
+7. Use the user's star and price limits when calling search_hotels.
+8. Places have only a name, type, and rating. Do not describe activities the tool did not provide.
+9. Each place appears only once in the itinerary. Plan 2 to 3 places per day.
+10. If search_hotels returns closest alternatives instead of exact matches, clearly say that no hotel matched the exact filters and list the alternatives with their stars and price.
+11. Use the travel dates the user gave. If search_flights returns date_match "schedule", say that flight times come from the dataset schedule and may differ from real bookings. Never refuse a trip because of dataset dates.
+12. Follow the user's extra requirements when the tools allow it. If you cannot, say so.
+13. If a tool returns an error or no data, say so clearly and continue with what you have.
 
 Final answer format:
-1. Trip Summary (including assumed dates)
-2. Flight Selected
+1. Trip Summary (dates, travellers, preferences)
+2. Flight Selected (outbound, and return if requested)
 3. Hotel Recommendation
-4. Weather for Each Day
-5. Day-wise Itinerary (2 to 3 places per day, using only tool data)
-6. Budget Breakdown (use the budget tool output)
+4. Weather for Each Day (if the weather tool is not enabled, write "Weather tool is turned off")
+5. Day-wise Itinerary
+6. Budget Breakdown (show the calculation and compare it with the user's total budget)
 7. Reasoning: why these choices were made
 """
 
 
-def create_chat_model() -> ChatGroq:
-    """Create the Groq chat model and attach the travel tools to it."""
+def create_chat_model(temperature: float, enabled_tool_names: list[str]) -> ChatGroq:
+    """Create the Groq chat model and attach only the enabled tools."""
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
-        raise ValueError("GROQ_API_KEY is missing. Add it to the .env file.")
+        raise ValueError("GROQ_API_KEY is missing. Add it to the .env file or Streamlit Secrets.")
 
     chat_model = ChatGroq(
         model=GROQ_MODEL_NAME,
-        temperature=0,
+        temperature=temperature,
         api_key=api_key,
         max_retries=GROQ_MAX_RETRIES,
     )
-    return chat_model.bind_tools(AVAILABLE_TOOLS)
+    enabled_tools = [TOOLS_BY_NAME[tool_name] for tool_name in enabled_tool_names]
+    return chat_model.bind_tools(enabled_tools)
 
 
 def shorten_tool_result(tool_result):
@@ -117,18 +129,32 @@ def run_tool_call(tool_call: dict) -> str:
     return json.dumps(tool_result, default=str, ensure_ascii=False)
 
 
-def run_travel_agent(user_query: str) -> str:
+def run_travel_agent(
+    user_query: str,
+    temperature: float = DEFAULT_TEMPERATURE,
+    enabled_tool_names: list[str] | None = None,
+) -> str:
     """Run the agent loop until the LLM gives a final answer without tool calls.
 
     Args:
         user_query: The traveler's request in natural language.
+        temperature: LLM creativity, between 0 (strict) and 1 (creative).
+        enabled_tool_names: Tools the agent may use. None means all tools.
 
     Returns:
         The final trip plan as text.
     """
-    chat_model = create_chat_model()
+    if enabled_tool_names is None:
+        enabled_tool_names = ALL_TOOL_NAMES
+    if not enabled_tool_names:
+        raise ValueError("At least one tool must be enabled.")
+    unknown_tools = [tool_name for tool_name in enabled_tool_names if tool_name not in TOOLS_BY_NAME]
+    if unknown_tools:
+        raise ValueError(f"Unknown tools: {unknown_tools}")
+
+    chat_model = create_chat_model(temperature, enabled_tool_names)
     conversation_messages = [
-        SystemMessage(content=build_system_prompt()),
+        SystemMessage(content=build_system_prompt(enabled_tool_names)),
         HumanMessage(content=user_query),
     ]
 
