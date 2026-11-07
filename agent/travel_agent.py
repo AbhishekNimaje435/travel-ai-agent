@@ -17,8 +17,12 @@ from tools.weather_tool import get_weather_forecast
 load_dotenv()
 
 GROQ_MODEL_NAME = "openai/gpt-oss-20b"
+AVAILABLE_GROQ_MODELS = [
+    "openai/gpt-oss-20b",
+    "openai/gpt-oss-120b",
+]
 DEFAULT_TEMPERATURE = 0.2
-MAXIMUM_TOOL_ROUNDS = 8
+MAXIMUM_TOOL_ROUNDS = 12
 MAXIMUM_ITEMS_PER_TOOL_OUTPUT = 5
 GROQ_MAX_RETRIES = 5
 
@@ -58,7 +62,8 @@ Tool usage rules:
 3. For the outbound flight, call search_flights with source_city, destination_city, and travel_date.
 4. If the user asks for a return flight, call search_flights once more with source and destination swapped and travel_date set to the return date.
 5. Choose the flight by the user's preference: cheapest_flight for "cheapest", fastest_flight for "fastest".
-6. If the user lists attraction interests, call search_places once for each interest, using it as place_type. Otherwise call search_places without place_type.
+6. Call search_places only once, without place_type. If the user lists attraction interests, pick only the returned places whose type matches those interests. Never call search_places more than once.
+
 
 Answer rules:
 1. Use only tool data. Never invent flights, hotels, places, prices, timings, or activities.
@@ -86,14 +91,18 @@ Final answer format:
 """
 
 
-def create_chat_model(temperature: float, enabled_tool_names: list[str]) -> ChatGroq:
+def create_chat_model(
+    model_name: str,
+    temperature: float,
+    enabled_tool_names: list[str],
+) -> ChatGroq:
     """Create the Groq chat model and attach only the enabled tools."""
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
         raise ValueError("GROQ_API_KEY is missing. Add it to the .env file or Streamlit Secrets.")
 
     chat_model = ChatGroq(
-        model=GROQ_MODEL_NAME,
+        model=model_name,
         temperature=temperature,
         api_key=api_key,
         max_retries=GROQ_MAX_RETRIES,
@@ -131,6 +140,7 @@ def run_tool_call(tool_call: dict) -> str:
 
 def run_travel_agent(
     user_query: str,
+    model_name: str = GROQ_MODEL_NAME,
     temperature: float = DEFAULT_TEMPERATURE,
     enabled_tool_names: list[str] | None = None,
 ) -> str:
@@ -138,6 +148,7 @@ def run_travel_agent(
 
     Args:
         user_query: The traveler's request in natural language.
+        model_name: Groq model to use, for example "openai/gpt-oss-20b".
         temperature: LLM creativity, between 0 (strict) and 1 (creative).
         enabled_tool_names: Tools the agent may use. None means all tools.
 
@@ -152,7 +163,7 @@ def run_travel_agent(
     if unknown_tools:
         raise ValueError(f"Unknown tools: {unknown_tools}")
 
-    chat_model = create_chat_model(temperature, enabled_tool_names)
+    chat_model = create_chat_model(model_name, temperature, enabled_tool_names)
     conversation_messages = [
         SystemMessage(content=build_system_prompt(enabled_tool_names)),
         HumanMessage(content=user_query),

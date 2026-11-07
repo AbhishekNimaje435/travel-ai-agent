@@ -6,7 +6,13 @@ from datetime import date, timedelta
 import streamlit as st
 from dotenv import load_dotenv
 
-from agent.travel_agent import DEFAULT_TEMPERATURE, GROQ_MODEL_NAME, run_travel_agent
+from agent.travel_agent import (
+    AVAILABLE_GROQ_MODELS,
+    DEFAULT_TEMPERATURE,
+    run_travel_agent,
+)
+from styles import APP_CSS, HERO_HTML, SIDEBAR_BRAND_HTML
+
 
 load_dotenv()
 
@@ -24,6 +30,10 @@ load_api_key_from_streamlit_secrets()
 
 st.set_page_config(page_title="AI Travel Planner", page_icon="🧳", layout="centered")
 
+st.markdown(APP_CSS, unsafe_allow_html=True)
+
+st.markdown(HERO_HTML, unsafe_allow_html=True)
+
 CITY_OPTIONS = ["Delhi", "Mumbai", "Goa", "Bangalore", "Chennai", "Hyderabad", "Kolkata", "Jaipur"]
 AMENITY_OPTIONS = ["wifi", "pool", "gym", "breakfast", "parking", "spa"]
 INTEREST_OPTIONS = ["beach", "fort", "temple", "museum", "lake", "park", "market", "monument"]
@@ -36,13 +46,13 @@ TOOL_LABELS = {
     "estimate_trip_budget": "💼 Budget estimate",
 }
 
-st.title("🧳 AI Travel Planning Assistant")
-st.caption("Flights, hotels, attractions, weather, and budget, planned by a LangChain agent powered by Groq.")
+
 
 with st.sidebar:
+    st.markdown(SIDEBAR_BRAND_HTML, unsafe_allow_html=True)
     st.header("⚙️ Model settings")
-    st.selectbox("LLM provider", ["Groq (free tier)"], disabled=True)
-    st.text_input("Model", value=GROQ_MODEL_NAME, disabled=True)
+    st.selectbox("LLM provider", ["Groq (free tier)"], index=0)
+    selected_model = st.selectbox("Model", AVAILABLE_GROQ_MODELS, index=0)
     st.caption("API key is read from Streamlit Secrets, so it is not shown here.")
     temperature = st.slider(
         "Creativity (Temperature)", min_value=0.0, max_value=1.0, value=DEFAULT_TEMPERATURE, step=0.05
@@ -187,6 +197,7 @@ if submit_button:
             with st.spinner("Agent is searching flights, hotels, places, and weather..."):
                 trip_plan = run_travel_agent(
                     user_query,
+                    model_name=selected_model,
                     temperature=temperature,
                     enabled_tool_names=enabled_tool_names,
                 )

@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Travel Planner</title>
+  <link rel="icon" href="data:,">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="app-layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">✈️</div>
+        <div class="brand-name">AI Travel Agent</div>
+        <div class="brand-tag">Plan · Explore · Travel</div>
+      </div>
+
+      <nav class="nav-menu">
+        <button class="nav-item active" data-nav="home"><span class="nav-icon">🏠</span> Home</button>
+        <button class="nav-item" data-nav="plan"><span class="nav-icon">🗓️</span> Plan Trip</button>
+        <button class="nav-item" data-nav="trips"><span class="nav-icon">🧳</span> My Trips</button>
+        <button class="nav-item" data-nav="favorites"><span class="nav-icon">❤️</span> Favorites</button>
+        <button class="nav-item" data-nav="about"><span class="nav-icon">ℹ️</span> About</button>
+        <button class="nav-item" data-nav="settings"><span class="nav-icon">⚙️</span> Settings</button>
+      </nav>
+
+      <div class="companion-card">
+        <div class="companion-avatar">🤖</div>
+        <div class="companion-title">Your Smart Travel Companion</div>
+        <div class="companion-subtitle">Powered by AI ✨</div>
+        <button class="companion-button" id="chat-button">Chat with AI →</button>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="main-content">
+
+      <header class="topbar">
+        <div class="topbar-spacer"></div>
+        <div class="user-chip">
+          <div class="user-avatar">A</div>
+          <span class="user-name">Abhishek</span>
+          <span class="user-caret">▾</span>
+        </div>
+      </header>
+
+      <!-- Home page: hero, search card, results -->
+      <div class="page" id="page-home" data-page="home">
+
+        <section class="hero">
+          <span class="hero-badge">✨ AI-Powered Travel Planning</span>
+          <h1 class="hero-title">Dream. Plan. <span class="hero-accent">Travel.</span></h1>
+          <p class="hero-subtitle">Let AI plan your perfect journey around the world ✈️</p>
+        </section>
+
+        <!-- Search card with tabs -->
+        <section class="search-card">
+
+          <div class="tabs" role="tablist">
+            <button class="tab-button active" data-tab="flights" role="tab">✈️ Flights</button>
+            <button class="tab-button" data-tab="hotels" role="tab">🛏️ Hotels</button>
+            <button class="tab-button" data-tab="places" role="tab">📍 Places</button>
+            <button class="tab-button" data-tab="itinerary" role="tab">📋 Itinerary</button>
+          </div>
+
+          <!-- Flights tab: search form -->
+          <div class="tab-panel active" id="panel-flights" role="tabpanel">
+
+            <form class="search-form" id="search-form" novalidate>
+              <label class="field">
+                <span class="field-label">From</span>
+                <input type="text" id="source-city" placeholder="Enter departure city" value="Hyderabad" required>
+              </label>
+
+              <label class="field">
+                <span class="field-label">To</span>
+                <input type="text" id="destination-city" placeholder="Enter destination city" value="Goa" required>
+              </label>
+
+              <label class="field">
+                <span class="field-label">Start Date</span>
+                <input type="date" id="start-date" required>
+              </label>
+
+              <label class="field">
+                <span class="field-label">End Date</span>
+                <input type="date" id="end-date" required>
+              </label>
+
+              <button type="submit" class="search-button" id="search-button">🔍 Plan my trip →</button>
+            </form>
+
+            <!-- Advanced preferences -->
+            <details class="advanced-panel">
+              <summary>⚙️ Advanced preferences</summary>
+
+              <div class="advanced-grid">
+                <label class="field">
+                  <span class="field-label">Number of travellers</span>
+                  <input type="number" id="travellers" min="1" max="10" value="1">
+                </label>
+
+                <label class="field">
+                  <span class="field-label">Flight preference</span>
+                  <select id="flight-preference">
+                    <option value="Cheapest" selected>Cheapest</option>
+                    <option value="Fastest">Fastest</option>
+                  </select>
+                </label>
+
+                <label class="field">
+                  <span class="field-label">Minimum hotel stars: <strong id="stars-value">4</strong></span>
+                  <input type="range" id="minimum-stars" min="1" max="5" value="4">
+                </label>
+
+                <label class="field">
+                  <span class="field-label">Max hotel price per night (₹)</span>
+                  <input type="number" id="max-hotel-price" min="500" max="20000" step="500" value="7000">
+                </label>
+
+                <label class="field">
+                  <span class="field-label">Food & local per person/day (₹)</span>
+                  <input type="number" id="daily-expense" min="0" max="10000" step="100" value="1500">
+                </label>
+
+                <label class="field">
+                  <span class="field-label">Total trip budget (₹)</span>
+                  <input type="number" id="total-budget" min="1000" max="500000" step="1000" value="30000">
+                </label>
+              </div>
+
+              <div class="checkbox-group">
+                <span class="field-label">Hotel amenities</span>
+                <div class="chip-row">
+                  <label class="chip"><input type="checkbox" name="amenity" value="wifi" checked> Wi-Fi</label>
+                  <label class="chip"><input type="checkbox" name="amenity" value="pool"> Pool</label>
+                  <label class="chip"><input type="checkbox" name="amenity" value="gym"> Gym</label>
+                  <label class="chip"><input type="checkbox" name="amenity" value="breakfast"> Breakfast</label>
+                  <label class="chip"><input type="checkbox" name="amenity" value="parking"> Parking</label>
+                  <label class="chip"><input type="checkbox" name="amenity" value="spa"> Spa</label>
+                </div>
+              </div>
+
+              <div class="checkbox-group">
+                <span class="field-label">Interests</span>
+                <div class="chip-row">
+                  <label class="chip"><input type="checkbox" name="interest" value="beach" checked> Beach</label>
+                  <label class="chip"><input type="checkbox" name="interest" value="fort" checked> Fort</label>
+                  <label class="chip"><input type="checkbox" name="interest" value="temple"> Temple</label>
+                  <label class="chip"><input type="checkbox" name="interest" value="museum"> Museum</label>
+                  <label class="chip"><input type="checkbox" name="interest" value="lake"> Lake</label>
+                  <label class="chip"><input type="checkbox" name="interest" value="park"> Park</label>
+                  <label class="chip"><input type="checkbox" name="interest" value="market"> Market</label>
+                  <label class="chip"><input type="checkbox" name="interest" value="monument"> Monument</label>
+                </div>
+              </div>
+
+              <label class="chip-toggle">
+                <input type="checkbox" id="include-return" checked> Include return flight
+              </label>
+
+              <label class="field">
+                <span class="field-label">Anything else? (optional)</span>
+                <textarea id="extra-requirements" rows="2" placeholder="For example: relaxed pace, prefer morning flights, vegetarian food"></textarea>
+              </label>
+            </details>
+
+            <p class="form-hint">Sirf city names likhein. Supported cities: Delhi, Mumbai, Goa, Bangalore, Chennai, Hyderabad, Kolkata, Jaipur.</p>
+          </div>
+
+          <!-- Hotels tab -->
+          <div class="tab-panel" id="panel-hotels" role="tabpanel">
+
+            <div class="hotel-filters">
+              <label class="field">
+                <span class="field-label">City</span>
+                <select id="hotel-city"></select>
+              </label>
+
+              <label class="field">
+                <span class="field-label">Minimum stars: <strong id="hotel-stars-value">1</strong></span>
+                <input type="range" id="hotel-stars" min="1" max="5" value="1">
+              </label>
+
+              <label class="field">
+                <span class="field-label">Max price per night (₹)</span>
+                <input type="number" id="hotel-max-price" min="500" max="20000" step="500" value="20000">
+              </label>
+
+              <label class="field">
+                <span class="field-label">Sort by</span>
+                <select id="hotel-sort">
+                  <option value="stars" selected>Stars (high to low)</option>
+                  <option value="price_low">Price (low to high)</option>
+                  <option value="price_high">Price (high to low)</option>
+                </select>
+              </label>
+            </div>
+
+            <p class="hotel-count" id="hotel-count"></p>
+            <div class="hotel-grid" id="hotel-grid"></div>
+          </div>
+
+          <!-- Places tab -->
+          <div class="tab-panel" id="panel-places" role="tabpanel">
+
+            <div class="hotel-filters">
+              <label class="field">
+                <span class="field-label">City</span>
+                <select id="place-city"></select>
+              </label>
+
+              <label class="field">
+                <span class="field-label">Type</span>
+                <select id="place-type"></select>
+              </label>
+
+              <label class="field">
+                <span class="field-label">Minimum rating: <strong id="place-rating-value">0</strong></span>
+                <input type="range" id="place-rating" min="0" max="5" step="0.1" value="0">
+              </label>
+
+              <label class="field">
+                <span class="field-label">Sort by</span>
+                <select id="place-sort">
+                  <option value="rating" selected>Rating (high to low)</option>
+                  <option value="name">Name (A to Z)</option>
+                </select>
+              </label>
+            </div>
+
+            <p class="hotel-count" id="place-count"></p>
+            <div class="hotel-grid" id="place-grid"></div>
+          </div>
+
+          <!-- Itinerary tab -->
+          <div class="tab-panel" id="panel-itinerary" role="tabpanel">
+
+            <div class="hotel-filters">
+              <label class="field">
+                <span class="field-label">City</span>
+                <select id="itin-city"></select>
+              </label>
+
+              <label class="field">
+                <span class="field-label">Number of days: <strong id="itin-days-value">3</strong></span>
+                <input type="range" id="itin-days" min="1" max="7" value="3">
+              </label>
+
+              <label class="field">
+                <span class="field-label">Places per day</span>
+                <select id="itin-per-day">
+                  <option value="1">1</option>
+                  <option value="2" selected>2</option>
+                  <option value="3">3</option>
+                </select>
+              </label>
+
+              <label class="field">
+                <span class="field-label">Minimum rating: <strong id="itin-rating-value">3.5</strong></span>
+                <input type="range" id="itin-rating" min="0" max="5" step="0.1" value="3.5">
+              </label>
+            </div>
+
+            <div class="checkbox-group">
+              <span class="field-label">Interests (kuch nahi chuna to sab types)</span>
+              <div class="chip-row" id="itin-interests"></div>
+            </div>
+
+            <div class="hotel-filters" style="margin-top: 1rem;">
+              <label class="field">
+                <span class="field-label">Hotel minimum stars</span>
+                <select id="itin-stars">
+                  <option value="5">5</option>
+                  <option value="4" selected>4</option>
+                  <option value="3">3</option>
+                  <option value="2">2</option>
+                  <option value="1">1</option>
+                </select>
+              </label>
+
+              <label class="field">
+                <span class="field-label">Max hotel price / night (₹)</span>
+                <input type="number" id="itin-hotel-price" min="500" max="20000" step="500" value="7000">
+              </label>
+
+              <label class="field">
+                <span class="field-label">Flight cost (₹, optional)</span>
+                <input type="number" id="itin-flight" min="0" step="100" value="0">
+              </label>
+
+              <label class="field">
+                <span class="field-label">Food & local per day (₹)</span>
+                <input type="number" id="itin-daily" min="0" step="100" value="1500">
+              </label>
+            </div>
+
+            <button type="button" class="itin-button" id="itin-build">🗺️ Build itinerary</button>
+
+            <p class="hotel-count" id="itin-message"></p>
+            <div id="itin-result"></div>
+          </div>
+
+        </section>
+
+        
+                <!-- Result box -->
+        <section class="result-box" id="result-box" hidden>
+          <div class="result-header result-header-row">
+            <h2>Your Trip Plan</h2>
+            <button type="button" class="save-trip-button" id="save-trip-button" hidden>💾 Save trip</button>
+          </div>
+          <div class="loading" id="loading" hidden>
+            <span class="spinner"></span>
+            <span>Agent flights, hotels, places aur weather check kar raha hai... (30 se 60 second lag sakte hain)</span>
+          </div>
+          <div class="result-text markdown-body" id="result-text"></div>
+        </section>
+
+      </div>
+
+      <!-- About page -->
+      <div class="page" id="page-about" data-page="about" hidden>
+        <section class="info-card">
+          <h2>About this project</h2>
+          <p>AI Travel Planner ek agentic AI project hai, jo LangChain aur Groq ke LLM (openai/gpt-oss-20b) se bana hai.</p>
+          <p>Agent flights, hotels, places, weather aur budget ke tools call karke trip plan banata hai. Hotels, Places aur Itinerary tabs local data se chalte hain, isliye ye Groq ki limit use nahi karte.</p>
+          <p><strong>Data:</strong> flights.json, hotels.json, places.json (sample data).</p>
+          <p><strong>Weather:</strong> Open-Meteo API (free, no key).</p>
+          <p><strong>Backend:</strong> FastAPI. <strong>Frontend:</strong> HTML, CSS, JavaScript.</p>
+        </section>
+      </div>
+
+      <!-- Settings page -->
+      <div class="page" id="page-settings" data-page="settings" hidden>
+        <section class="info-card">
+          <h2>Settings</h2>
+          <p>Ye settings abhi read-only hain. Model aur temperature agent ke default values hain.</p>
+          <div class="settings-row"><span>LLM provider</span><span>Groq (free tier)</span></div>
+          <div class="settings-row"><span>Model</span><span>openai/gpt-oss-20b</span></div>
+          <div class="settings-row"><span>Temperature</span><span>0.2</span></div>
+          <div class="settings-row"><span>Max tool rounds</span><span>12</span></div>
+        </section>
+      </div>
+
+      <!-- My Trips page -->
+            <!-- My Trips page -->
+      <div class="page" id="page-trips" data-page="trips" hidden>
+        <section class="info-card">
+          <h2>My Trips</h2>
+          <p>Jo trip plans aapne "Save trip" se save kiye hain, wo yahan dikhenge.</p>
+        </section>
+        <div id="trips-list" style="margin-top: 1rem;"></div>
+      </div>
+
+            <!-- Favorites page -->
+      <div class="page" id="page-favorites" data-page="favorites" hidden>
+        <section class="info-card">
+          <h2>Favorites</h2>
+          <p>Hotels aur places jo aapne ♡ se save ki hain, wo yahan dikhenge.</p>
+        </section>
+        <div class="hotel-grid" id="favorites-list" style="margin-top: 1rem;"></div>
+      </div>
+
+      <!-- Plan Trip page: shows the search form, same as Home -->
+      <div class="page" id="page-plan" data-page="plan" hidden>
+        <section class="info-card">
+          <h2>Plan Trip</h2>
+          <p>Trip plan karne ke liye Home page par jayein. Wahan Flights form se search karke plan bana sakte hain.</p>
+        </section>
+      </div>
+
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+  <script src="/static/storage.js"></script>
+  <script src="/static/script.js"></script>
+</body>
+</html>
