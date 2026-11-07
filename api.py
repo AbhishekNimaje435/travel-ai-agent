@@ -1,14 +1,17 @@
 """FastAPI backend: exposes the travel agent as a JSON API and serves the frontend."""
 
 import json
+import os
 from datetime import date
 from pathlib import Path
+from typing import Literal
 
 from dotenv import load_dotenv
-from tools.budget_tool import calculate_trip_budget
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
+from langchain_groq import ChatGroq
 from pydantic import BaseModel, Field, model_validator
 
 from agent.query_builder import build_user_query
@@ -18,12 +21,14 @@ from agent.travel_agent import (
     DEFAULT_TEMPERATURE,
     run_travel_agent,
 )
+from tools.budget_tool import calculate_trip_budget
 
 load_dotenv()
 
 BASE_DIRECTORY = Path(__file__).parent
 FRONTEND_DIRECTORY = BASE_DIRECTORY / "frontend"
 HOTELS_FILE_PATH = BASE_DIRECTORY / "data" / "hotels.json"
+PLACES_FILE_PATH = BASE_DIRECTORY / "data" / "places.json"
 
 app = FastAPI(title="AI Travel Planner API")
 
@@ -59,11 +64,43 @@ class TripRequest(BaseModel):
         return self
 
 
+CHAT_HISTORY_LIMIT = 10
+CHAT_SYSTEM_PROMPT = (
+    "You are a friendly travel assistant for India and world travel. "
+    "Answer travel questions briefly, in under 150 words. "
+    "You do not have live prices, live flight data, or booking access. "
+    "If the user asks for live prices or bookings, say that and suggest checking the airline or hotel website."
+)
+
+
+class ChatMessage(BaseModel):
+    """One message in the chat history."""
+
+    role: Literal["user", "assistant"]
+    content: str = Field(min_length=1, max_length=1000)
+
+
+class ChatRequest(BaseModel):
+    """Chat history sent by the frontend."""
+
+    messages: list[ChatMessage] = Field(min_length=1, max_length=CHAT_HISTORY_LIMIT)
+    model_name: str = AVAILABLE_GROQ_MODELS[0]
+
+
 def load_hotels() -> list[dict]:
     """Read all hotels from hotels.json. Returns an empty list if the file cannot be read."""
     try:
         with open(HOTELS_FILE_PATH, "r", encoding="utf-8") as hotels_file:
             return json.load(hotels_file)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return []
+
+
+def load_places() -> list[dict]:
+    """Read all places from places.json. Returns an empty list if the file cannot be read."""
+    try:
+        with open(PLACES_FILE_PATH, "r", encoding="utf-8") as places_file:
+            return json.load(places_file)
     except (FileNotFoundError, json.JSONDecodeError):
         return []
 
@@ -114,53 +151,6 @@ def search_hotels_api(
     return {"city": city, "count": len(matching_hotels), "hotels": matching_hotels}
 
 
-@app.post("/api/plan")
-def create_trip_plan(request: TripRequest) -> dict:
-    """Run the travel agent for the given trip details and return the plan text."""
-    user_query = build_user_query(
-        source_city=request.source_city,
-        destination_city=request.destination_city,
-        start_date=request.start_date,
-        end_date=request.end_date,
-        travellers=request.travellers,
-        flight_preference=request.flight_preference,
-        include_return_flight=request.include_return_flight,
-        minimum_stars=request.minimum_stars,
-        maximum_hotel_price=request.maximum_hotel_price,
-        daily_local_expense=request.daily_local_expense,
-        total_budget=request.total_budget,
-        amenities=request.amenities,
-        interests=request.interests,
-        extra_requirements=request.extra_requirements,
-    )
-    try:
-        plan_text = run_travel_agent(
-            user_query,
-            model_name=request.model_name,
-            temperature=request.temperature,
-            enabled_tool_names=request.enabled_tools,
-        )
-    except ValueError as configuration_error:
-        raise HTTPException(status_code=400, detail=str(configuration_error))
-    except Exception as unexpected_error:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Trip plan generate nahi ho saka: {unexpected_error}",
-        )
-    return {"plan": plan_text}
-
-PLACES_FILE_PATH = BASE_DIRECTORY / "data" / "places.json"
-
-
-def load_places() -> list[dict]:
-    """Read all places from places.json. Returns an empty list if the file cannot be read."""
-    try:
-        with open(PLACES_FILE_PATH, "r", encoding="utf-8") as places_file:
-            return json.load(places_file)
-    except (FileNotFoundError, json.JSONDecodeError):
-        return []
-
-
 @app.get("/api/place-options")
 def get_place_options() -> dict:
     """Return the cities and attraction types available in places.json, for the filter dropdowns."""
@@ -195,6 +185,7 @@ def search_places_api(
         matching_places.sort(key=lambda place: place["rating"], reverse=True)
 
     return {"city": city, "count": len(matching_places), "places": matching_places}
+
 
 @app.get("/api/itinerary")
 def build_itinerary(
@@ -254,13 +245,13 @@ def build_itinerary(
     messages = []
     if len(selected_places) < needed_place_count:
         messages.append(
-            f"Sirf {len(selected_places)} places mili, {needed_place_count} ki zaroorat thi. "
-            "Rating ya interests kam karke dekho."
+            f"Only {len(selected_places)} places found, {needed_place_count} were needed. "
+            "Try lowering the rating or changing the interests."
         )
     if top_hotel is None:
-        messages.append("Is city mein filters ke saath koi hotel nahi mila, isliye hotel cost nahi hai.")
+        messages.append("No hotel matched these filters in this city, so hotel cost is not included.")
     if flight_price == 0:
-        messages.append("Flight cost nahi diya, isliye total mein flight shamil nahi hai.")
+        messages.append("No flight cost was entered, so the total does not include a flight.")
 
     return {
         "city": city,
@@ -269,6 +260,76 @@ def build_itinerary(
         "budget": budget,
         "messages": messages,
     }
+
+
+@app.post("/api/plan")
+def create_trip_plan(request: TripRequest) -> dict:
+    """Run the travel agent for the given trip details and return the plan text."""
+    user_query = build_user_query(
+        source_city=request.source_city,
+        destination_city=request.destination_city,
+        start_date=request.start_date,
+        end_date=request.end_date,
+        travellers=request.travellers,
+        flight_preference=request.flight_preference,
+        include_return_flight=request.include_return_flight,
+        minimum_stars=request.minimum_stars,
+        maximum_hotel_price=request.maximum_hotel_price,
+        daily_local_expense=request.daily_local_expense,
+        total_budget=request.total_budget,
+        amenities=request.amenities,
+        interests=request.interests,
+        extra_requirements=request.extra_requirements,
+    )
+    try:
+        plan_text = run_travel_agent(
+            user_query,
+            model_name=request.model_name,
+            temperature=request.temperature,
+            enabled_tool_names=request.enabled_tools,
+        )
+    except ValueError as configuration_error:
+        raise HTTPException(status_code=400, detail=str(configuration_error))
+    except Exception as unexpected_error:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Trip plan generate nahi ho saka: {unexpected_error}",
+        )
+    return {"plan": plan_text}
+
+
+@app.post("/api/chat")
+def chat_with_ai(request: ChatRequest) -> dict:
+    """Answer a travel question with the Groq model. No tools are used, so it is cheap."""
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        raise HTTPException(status_code=500, detail="GROQ_API_KEY is missing on the server.")
+
+    if request.messages[-1].role != "user":
+        raise HTTPException(status_code=400, detail="The last message must be from the user.")
+
+    conversation = [SystemMessage(content=CHAT_SYSTEM_PROMPT)]
+    for message in request.messages[-CHAT_HISTORY_LIMIT:]:
+        if message.role == "user":
+            conversation.append(HumanMessage(content=message.content))
+        else:
+            conversation.append(AIMessage(content=message.content))
+
+    chat_model = ChatGroq(
+        model=request.model_name,
+        temperature=0.4,
+        api_key=api_key,
+        max_retries=2,
+        max_tokens=400,
+    )
+
+    try:
+        ai_response = chat_model.invoke(conversation)
+    except Exception as chat_error:
+        raise HTTPException(status_code=500, detail=f"Chat reply could not be generated: {chat_error}")
+
+    return {"reply": ai_response.content}
+
 
 app.mount("/static", StaticFiles(directory=FRONTEND_DIRECTORY), name="static")
 

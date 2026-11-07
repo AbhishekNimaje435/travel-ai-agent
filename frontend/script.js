@@ -21,10 +21,6 @@ navButtons.forEach((button) => {
   });
 });
 
-document.getElementById("chat-button").addEventListener("click", () => {
-  showToast("AI chat feature will be added in a later step");
-});
-
 // ---------- Tabs (Flights, Hotels, Places, Itinerary) ----------
 const tabButtons = document.querySelectorAll(".tab-button");
 

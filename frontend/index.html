@@ -377,11 +377,25 @@
     </main>
   </div>
 
+  <!-- Chat with AI panel -->
+  <div class="chat-panel" id="chat-panel" hidden>
+    <div class="chat-header">
+      <span>🤖 Travel Assistant</span>
+      <button type="button" class="chat-close" id="chat-close" aria-label="Close chat">✕</button>
+    </div>
+    <div class="chat-messages" id="chat-messages"></div>
+    <form class="chat-form" id="chat-form" autocomplete="off">
+      <input type="text" id="chat-input" placeholder="Ask about a destination..." maxlength="500">
+      <button type="submit" class="chat-send" id="chat-send">Send</button>
+    </form>
+  </div>
+
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
   <script src="/static/storage.js"></script>
   <script src="/static/script.js"></script>
+  <script src="/static/chat.js"></script>
 </body>
 </html>
