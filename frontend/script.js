@@ -3,11 +3,8 @@ const navButtons = document.querySelectorAll(".nav-item");
 const pages = document.querySelectorAll(".page");
 
 function showPage(pageName) {
-  // "Plan Trip" opens the Home page, where the search form is
-  const targetPage = pageName === "plan" ? "home" : pageName;
-
   pages.forEach((page) => {
-    page.hidden = page.dataset.page !== targetPage;
+    page.hidden = page.dataset.page !== pageName;
   });
   navButtons.forEach((button) => {
     button.classList.toggle("active", button.dataset.nav === pageName);
@@ -527,6 +524,24 @@ itinDaysInput.addEventListener("input", () => {
 });
 itinRatingInput.addEventListener("input", () => {
   itinRatingValue.textContent = itinRatingInput.value;
+});
+
+// ---------- Home page: buttons and destination cards ----------
+document.querySelectorAll("[data-go]").forEach((element) => {
+  element.addEventListener("click", () => {
+    showPage(element.dataset.go);
+    if (element.dataset.tabTarget) {
+      document.querySelector(`.tab-button[data-tab="${element.dataset.tabTarget}"]`).click();
+    }
+  });
+});
+
+document.querySelectorAll(".destination-card").forEach((card) => {
+  card.addEventListener("click", () => {
+    document.getElementById("destination-city").value = card.dataset.city;
+    showPage("plan");
+    showToast(`${card.dataset.city} selected. Choose dates and click Plan my trip.`);
+  });
 });
 
 // ---------- Toast ----------

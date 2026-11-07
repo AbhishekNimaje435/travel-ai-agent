@@ -50,14 +50,119 @@
         </div>
       </header>
 
-      <!-- Home page: hero, search card, results -->
+      <!-- Home page: new landing design -->
       <div class="page" id="page-home" data-page="home">
 
         <section class="hero">
           <span class="hero-badge">✨ AI-Powered Travel Planning</span>
           <h1 class="hero-title">Dream. Plan. <span class="hero-accent">Travel.</span></h1>
-          <p class="hero-subtitle">Let AI plan your perfect journey around the world ✈️</p>
+          <p class="hero-subtitle">Let AI plan your perfect journey around India ✈️</p>
+
+          <div class="home-actions">
+            <button type="button" class="home-btn-primary" data-go="plan">🚀 Start Planning Now</button>
+            <button type="button" class="home-btn-secondary" data-go="plan" data-tab-target="places">📍 Explore Places</button>
+          </div>
         </section>
+
+        <div class="home-split">
+
+          <!-- Popular destinations -->
+          <section class="home-section">
+            <div class="section-head">
+              <div>
+                <h2 class="section-title">Popular Destinations</h2>
+                <p class="section-sub">Pick a city and start planning</p>
+              </div>
+            </div>
+
+            <div class="destination-grid">
+              <div class="destination-card dest-goa" data-city="Goa">
+                <span class="dest-emoji">🏖️</span>
+                <div class="dest-name">Goa</div>
+                <div class="dest-tag">Beaches and sunsets</div>
+                <div class="dest-cta">Plan trip →</div>
+              </div>
+
+              <div class="destination-card dest-jaipur" data-city="Jaipur">
+                <span class="dest-emoji">🏰</span>
+                <div class="dest-name">Jaipur</div>
+                <div class="dest-tag">Forts and palaces</div>
+                <div class="dest-cta">Plan trip →</div>
+              </div>
+
+              <div class="destination-card dest-kolkata" data-city="Kolkata">
+                <span class="dest-emoji">🎭</span>
+                <div class="dest-name">Kolkata</div>
+                <div class="dest-tag">Art and culture</div>
+                <div class="dest-cta">Plan trip →</div>
+              </div>
+
+              <div class="destination-card dest-chennai" data-city="Chennai">
+                <span class="dest-emoji">🛕</span>
+                <div class="dest-name">Chennai</div>
+                <div class="dest-tag">Temples and beaches</div>
+                <div class="dest-cta">Plan trip →</div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Your Trip Planner card -->
+          <aside class="planner-card">
+            <div class="planner-title">🧭 Your Trip Planner</div>
+            <p class="planner-text">Get a personalized travel plan with AI.</p>
+
+            <ul class="planner-checklist">
+              <li>Personalized itineraries</li>
+              <li>Budget breakdown</li>
+              <li>Smart hotel and place picks</li>
+            </ul>
+
+            <button type="button" class="home-btn-primary planner-button" data-go="plan">Start Planning Now →</button>
+          </aside>
+
+        </div>
+
+        <!-- Feature strip -->
+        <section class="feature-strip">
+          <div class="feature-item">
+            <div class="feature-icon">⚡</div>
+            <div>
+              <div class="feature-title">AI-Powered</div>
+              <div class="feature-sub">Smart suggestions</div>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">💰</div>
+            <div>
+              <div class="feature-title">Budget Friendly</div>
+              <div class="feature-sub">Clear cost breakdown</div>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">🌏</div>
+            <div>
+              <div class="feature-title">Explore India</div>
+              <div class="feature-sub">8 popular cities</div>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">🌦️</div>
+            <div>
+              <div class="feature-title">Weather Check</div>
+              <div class="feature-sub">Daily forecast</div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- Plan Trip page: search form, tabs and result (same as before) -->
+      <div class="page" id="page-plan" data-page="plan" hidden>
+
+        <div class="page-heading">
+          <h2>Plan your trip</h2>
+          <p>Choose cities and dates, then let the AI agent build your plan.</p>
+        </div>
 
         <!-- Search card with tabs -->
         <section class="search-card">
@@ -364,14 +469,6 @@
           <p>Hotels and places you saved with ♡ will appear here.</p>
         </section>
         <div class="hotel-grid" id="favorites-list" style="margin-top: 1rem;"></div>
-      </div>
-
-      <!-- Plan Trip page: shows the search form, same as Home -->
-      <div class="page" id="page-plan" data-page="plan" hidden>
-        <section class="info-card">
-          <h2>Plan Trip</h2>
-          <p>To plan a trip, go to the Home page and use the Flights form.</p>
-        </section>
       </div>
 
     </main>
