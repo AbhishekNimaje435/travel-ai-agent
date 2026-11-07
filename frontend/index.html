@@ -171,7 +171,7 @@
               </label>
             </details>
 
-            <p class="form-hint">Sirf city names likhein. Supported cities: Delhi, Mumbai, Goa, Bangalore, Chennai, Hyderabad, Kolkata, Jaipur.</p>
+            <p class="form-hint">Enter city names only. Supported cities: Delhi, Mumbai, Goa, Bangalore, Chennai, Hyderabad, Kolkata, Jaipur.</p>
           </div>
 
           <!-- Hotels tab -->
@@ -269,7 +269,7 @@
             </div>
 
             <div class="checkbox-group">
-              <span class="field-label">Interests (kuch nahi chuna to sab types)</span>
+              <span class="field-label">Interests (leave empty to include all types)</span>
               <div class="chip-row" id="itin-interests"></div>
             </div>
 
@@ -309,8 +309,7 @@
 
         </section>
 
-        
-                <!-- Result box -->
+        <!-- Result box -->
         <section class="result-box" id="result-box" hidden>
           <div class="result-header result-header-row">
             <h2>Your Trip Plan</h2>
@@ -318,7 +317,7 @@
           </div>
           <div class="loading" id="loading" hidden>
             <span class="spinner"></span>
-            <span>Agent flights, hotels, places aur weather check kar raha hai... (30 se 60 second lag sakte hain)</span>
+            <span>Agent is checking flights, hotels, places and weather... (this can take 30 to 60 seconds)</span>
           </div>
           <div class="result-text markdown-body" id="result-text"></div>
         </section>
@@ -329,8 +328,8 @@
       <div class="page" id="page-about" data-page="about" hidden>
         <section class="info-card">
           <h2>About this project</h2>
-          <p>AI Travel Planner ek agentic AI project hai, jo LangChain aur Groq ke LLM (openai/gpt-oss-20b) se bana hai.</p>
-          <p>Agent flights, hotels, places, weather aur budget ke tools call karke trip plan banata hai. Hotels, Places aur Itinerary tabs local data se chalte hain, isliye ye Groq ki limit use nahi karte.</p>
+          <p>AI Travel Planner is an agentic AI project built with LangChain and Groq LLM (openai/gpt-oss-20b).</p>
+          <p>The agent calls flight, hotel, places, weather and budget tools to create a trip plan. The Hotels, Places and Itinerary tabs use local data, so they do not use the Groq limit.</p>
           <p><strong>Data:</strong> flights.json, hotels.json, places.json (sample data).</p>
           <p><strong>Weather:</strong> Open-Meteo API (free, no key).</p>
           <p><strong>Backend:</strong> FastAPI. <strong>Frontend:</strong> HTML, CSS, JavaScript.</p>
@@ -341,7 +340,7 @@
       <div class="page" id="page-settings" data-page="settings" hidden>
         <section class="info-card">
           <h2>Settings</h2>
-          <p>Ye settings abhi read-only hain. Model aur temperature agent ke default values hain.</p>
+          <p>These settings are read-only for now. The model and temperature are the agent's default values.</p>
           <div class="settings-row"><span>LLM provider</span><span>Groq (free tier)</span></div>
           <div class="settings-row"><span>Model</span><span>openai/gpt-oss-20b</span></div>
           <div class="settings-row"><span>Temperature</span><span>0.2</span></div>
@@ -350,20 +349,19 @@
       </div>
 
       <!-- My Trips page -->
-            <!-- My Trips page -->
       <div class="page" id="page-trips" data-page="trips" hidden>
         <section class="info-card">
           <h2>My Trips</h2>
-          <p>Jo trip plans aapne "Save trip" se save kiye hain, wo yahan dikhenge.</p>
+          <p>Trip plans you saved with "Save trip" will appear here.</p>
         </section>
         <div id="trips-list" style="margin-top: 1rem;"></div>
       </div>
 
-            <!-- Favorites page -->
+      <!-- Favorites page -->
       <div class="page" id="page-favorites" data-page="favorites" hidden>
         <section class="info-card">
           <h2>Favorites</h2>
-          <p>Hotels aur places jo aapne ♡ se save ki hain, wo yahan dikhenge.</p>
+          <p>Hotels and places you saved with ♡ will appear here.</p>
         </section>
         <div class="hotel-grid" id="favorites-list" style="margin-top: 1rem;"></div>
       </div>
@@ -372,7 +370,7 @@
       <div class="page" id="page-plan" data-page="plan" hidden>
         <section class="info-card">
           <h2>Plan Trip</h2>
-          <p>Trip plan karne ke liye Home page par jayein. Wahan Flights form se search karke plan bana sakte hain.</p>
+          <p>To plan a trip, go to the Home page and use the Flights form.</p>
         </section>
       </div>
 

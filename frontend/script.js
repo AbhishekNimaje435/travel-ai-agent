@@ -3,7 +3,7 @@ const navButtons = document.querySelectorAll(".nav-item");
 const pages = document.querySelectorAll(".page");
 
 function showPage(pageName) {
-  // "Plan Trip" ka matlab Home page hai, jahan search form hai
+  // "Plan Trip" opens the Home page, where the search form is
   const targetPage = pageName === "plan" ? "home" : pageName;
 
   pages.forEach((page) => {
@@ -22,7 +22,7 @@ navButtons.forEach((button) => {
 });
 
 document.getElementById("chat-button").addEventListener("click", () => {
-  showToast("AI chat feature baad ke step mein add hoga");
+  showToast("AI chat feature will be added in a later step");
 });
 
 // ---------- Tabs (Flights, Hotels, Places, Itinerary) ----------
@@ -94,6 +94,9 @@ const searchButton = document.getElementById("search-button");
 const resultBox = document.getElementById("result-box");
 const loadingBox = document.getElementById("loading");
 const resultText = document.getElementById("result-text");
+const saveTripButton = document.getElementById("save-trip-button");
+
+let currentPlan = null;
 
 searchForm.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -104,15 +107,15 @@ searchForm.addEventListener("submit", async (event) => {
   const endDate = document.getElementById("end-date").value;
 
   if (!sourceCity || !destinationCity || !startDate || !endDate) {
-    showToast("Sab fields bharo");
+    showToast("Please fill in all fields");
     return;
   }
   if (sourceCity.toLowerCase() === destinationCity.toLowerCase()) {
-    showToast("From aur To alag cities hone chahiye");
+    showToast("From and To cities should be different");
     return;
   }
   if (endDate < startDate) {
-    showToast("End date start date se pehle nahi ho sakti");
+    showToast("End date cannot be before the start date");
     return;
   }
 
@@ -154,13 +157,13 @@ searchForm.addEventListener("submit", async (event) => {
     const data = await response.json();
 
     if (!response.ok) {
-      showResultError(data.detail || "Trip plan generate nahi ho saka.");
+      showResultError(data.detail || "Could not generate the trip plan.");
       return;
     }
 
     showResultText(data.plan);
   } catch (networkError) {
-    showResultError("Server se connection nahi ho paya. Check karo ki uvicorn chal raha hai.");
+    showResultError("Could not connect to the server. Please try again in a moment.");
   } finally {
     searchButton.disabled = false;
     searchButton.textContent = "🔍 Plan my trip →";
@@ -169,17 +172,15 @@ searchForm.addEventListener("submit", async (event) => {
 
 function showResultLoading() {
   resultBox.hidden = false;
-  saveTripButton.hidden = true;
-  currentPlan = null;
   loadingBox.hidden = false;
   resultText.innerHTML = "";
   resultText.classList.remove("error");
+  saveTripButton.hidden = true;
+  currentPlan = null;
   searchButton.disabled = true;
   searchButton.textContent = "Planning...";
   resultBox.scrollIntoView({ behavior: "smooth", block: "start" });
 }
-
-let currentPlan = null;
 
 function showResultText(planText) {
   loadingBox.hidden = true;
@@ -205,6 +206,25 @@ function showResultError(message) {
   resultText.classList.add("error");
 }
 
+// ---------- Save trip button ----------
+saveTripButton.addEventListener("click", () => {
+  if (!currentPlan) return;
+
+  addTrip(
+    {
+      source: currentPlan.source,
+      destination: currentPlan.destination,
+      startDate: currentPlan.startDate,
+      endDate: currentPlan.endDate,
+    },
+    currentPlan.planText
+  );
+
+  saveTripButton.disabled = true;
+  saveTripButton.textContent = "✅ Saved";
+  showToast("Trip saved to My Trips");
+});
+
 // ---------- Hotels tab: loads from /api/hotels (no Groq call) ----------
 const hotelCitySelect = document.getElementById("hotel-city");
 const hotelStarsInput = document.getElementById("hotel-stars");
@@ -227,7 +247,7 @@ async function loadHotelCitiesOnce() {
     hotelCitiesLoaded = true;
     loadHotels();
   } catch (error) {
-    showToast("Cities load nahi ho paaye");
+    showToast("Could not load cities");
   }
 }
 
@@ -246,15 +266,15 @@ async function loadHotels() {
     const response = await fetch(`/api/hotels?${params.toString()}`);
     const data = await response.json();
     renderHotels(data.hotels);
-    hotelCount.textContent = `${data.count} hotel(s) mile ${city} mein`;
+    hotelCount.textContent = `${data.count} hotel(s) found in ${city}`;
   } catch (error) {
-    hotelGrid.innerHTML = `<div class="hotel-empty">Hotels load nahi ho paaye.</div>`;
+    hotelGrid.innerHTML = `<div class="hotel-empty">Could not load hotels.</div>`;
   }
 }
 
 function renderHotels(hotels) {
   if (hotels.length === 0) {
-    hotelGrid.innerHTML = `<div class="hotel-empty">Is filter ke saath koi hotel nahi mila. Stars ya price badhakar dekho.</div>`;
+    hotelGrid.innerHTML = `<div class="hotel-empty">No hotels match this filter. Try more stars or a higher price.</div>`;
     return;
   }
 
@@ -314,7 +334,7 @@ async function loadPlaceOptionsOnce() {
     placeOptionsLoaded = true;
     loadPlaces();
   } catch (error) {
-    showToast("Places options load nahi ho paaye");
+    showToast("Could not load place options");
   }
 }
 
@@ -333,15 +353,15 @@ async function loadPlaces() {
     const response = await fetch(`/api/places?${params.toString()}`);
     const data = await response.json();
     renderPlaces(data.places);
-    placeCount.textContent = `${data.count} place(s) mili ${city} mein`;
+    placeCount.textContent = `${data.count} place(s) found in ${city}`;
   } catch (error) {
-    placeGrid.innerHTML = `<div class="hotel-empty">Places load nahi ho paaye.</div>`;
+    placeGrid.innerHTML = `<div class="hotel-empty">Could not load places.</div>`;
   }
 }
 
 function renderPlaces(places) {
   if (places.length === 0) {
-    placeGrid.innerHTML = `<div class="hotel-empty">Is filter ke saath koi place nahi mili. Rating ya type badal kar dekho.</div>`;
+    placeGrid.innerHTML = `<div class="hotel-empty">No places match this filter. Try a different type or rating.</div>`;
     return;
   }
 
@@ -409,14 +429,14 @@ async function loadItineraryOptionsOnce() {
 
     itineraryOptionsLoaded = true;
   } catch (error) {
-    showToast("Itinerary options load nahi ho paaye");
+    showToast("Could not load itinerary options");
   }
 }
 
 async function buildItinerary() {
   const city = itinCitySelect.value;
   if (!city) {
-    showToast("Pehle city chuno");
+    showToast("Please choose a city first");
     return;
   }
 
@@ -438,20 +458,20 @@ async function buildItinerary() {
 
   itinBuildButton.disabled = true;
   itinBuildButton.textContent = "Building...";
-  itinResult.innerHTML = `<div class="hotel-empty">Itinerary ban raha hai...</div>`;
+  itinResult.innerHTML = `<div class="hotel-empty">Building your itinerary...</div>`;
 
   try {
     const response = await fetch(`/api/itinerary?${params.toString()}`);
     const data = await response.json();
 
     if (!response.ok) {
-      itinResult.innerHTML = `<div class="hotel-empty">Itinerary nahi ban paaya. Inputs check karo.</div>`;
+      itinResult.innerHTML = `<div class="hotel-empty">Could not build the itinerary. Please check the inputs.</div>`;
       return;
     }
 
     renderItinerary(data);
   } catch (error) {
-    itinResult.innerHTML = `<div class="hotel-empty">Server se connection nahi ho paya.</div>`;
+    itinResult.innerHTML = `<div class="hotel-empty">Could not connect to the server.</div>`;
   } finally {
     itinBuildButton.disabled = false;
     itinBuildButton.textContent = "🗺️ Build itinerary";
@@ -473,7 +493,7 @@ function renderItinerary(data) {
                 </li>`
             )
             .join("")
-        : `<li><span>Is din ke liye koi place nahi bachi</span></li>`;
+        : `<li><span>No places left for this day</span></li>`;
 
       return `
         <div class="itin-day" style="animation-delay: ${index * 0.1}s">
@@ -489,7 +509,7 @@ function renderItinerary(data) {
          <p><strong>${data.hotel.name}</strong> · ${"★".repeat(data.hotel.stars)}</p>
          <p>₹${data.hotel.price_per_night.toLocaleString("en-IN")} / night</p>
        </div>`
-    : `<div class="itin-card"><h3>🏨 Hotel</h3><p>Koi hotel match nahi hua.</p></div>`;
+    : `<div class="itin-card"><h3>🏨 Hotel</h3><p>No matching hotel found.</p></div>`;
 
   const budgetCard = data.budget
     ? `<div class="itin-card">
@@ -499,7 +519,7 @@ function renderItinerary(data) {
          <div class="itin-budget-row"><span>Local expenses</span><span>₹${Math.round(data.budget.local_expense_cost).toLocaleString("en-IN")}</span></div>
          <div class="itin-budget-row total"><span>Total</span><span>₹${Math.round(data.budget.total_cost).toLocaleString("en-IN")}</span></div>
        </div>`
-    : `<div class="itin-card"><h3>💰 Budget</h3><p>Hotel mile to budget banega.</p></div>`;
+    : `<div class="itin-card"><h3>💰 Budget</h3><p>Budget will appear once a hotel is found.</p></div>`;
 
   itinResult.innerHTML = `${dayCards}<div class="itin-summary-grid">${hotelCard}${budgetCard}</div>`;
 }
@@ -524,24 +544,3 @@ function showToast(message) {
 
 // ---------- Start ----------
 setupDateInputs();
-
-// ---------- Save trip button ----------
-const saveTripButton = document.getElementById("save-trip-button");
-
-saveTripButton.addEventListener("click", () => {
-  if (!currentPlan) return;
-
-  addTrip(
-    {
-      source: currentPlan.source,
-      destination: currentPlan.destination,
-      startDate: currentPlan.startDate,
-      endDate: currentPlan.endDate,
-    },
-    currentPlan.planText
-  );
-
-  saveTripButton.disabled = true;
-  saveTripButton.textContent = "✅ Saved";
-  showToast("Trip My Trips mein save ho gaya");
-});

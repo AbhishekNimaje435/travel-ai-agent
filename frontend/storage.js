@@ -107,7 +107,7 @@ function renderFavoritesPage() {
 
   const favorites = loadFavorites();
   if (favorites.length === 0) {
-    container.innerHTML = `<div class="hotel-empty">Abhi koi favorite nahi hai. Hotels ya Places par ♡ dabao.</div>`;
+    container.innerHTML = `<div class="hotel-empty">No favorites yet. Tap ♡ on a hotel or place.</div>`;
     return;
   }
 
@@ -153,7 +153,7 @@ function renderTripsPage() {
 
   const trips = loadTrips();
   if (trips.length === 0) {
-    container.innerHTML = `<div class="hotel-empty">Abhi koi trip save nahi hai. Plan banane ke baad "Save trip" dabao.</div>`;
+    container.innerHTML = `<div class="hotel-empty">No trips saved yet. After planning a trip, tap "Save trip".</div>`;
     return;
   }
 
@@ -169,7 +169,7 @@ function renderTripsPage() {
           <button type="button" class="trip-delete" data-trip-id="${trip.id}" aria-label="Delete trip">🗑️</button>
         </div>
         <details class="trip-details">
-          <summary>Plan dekhne ke liye click karo</summary>
+          <summary>Click to view the plan</summary>
           <div class="trip-plan-text">${escapeHtml(trip.planText)}</div>
         </details>
       </div>`
@@ -193,7 +193,7 @@ document.addEventListener("click", (event) => {
     const nowSaved = toggleFavorite(favoriteId);
     if (nowSaved === null) return;
 
-    showToast(nowSaved ? "Favorites mein save ho gaya" : "Favorites se hata diya");
+    showToast(nowSaved ? "Saved to favorites" : "Removed from favorites");
     renderFavoritesPage();
 
     document.querySelectorAll(`.fav-button[data-fav-id="${favoriteId}"]`).forEach((heart) => {
@@ -207,7 +207,7 @@ document.addEventListener("click", (event) => {
   const deleteButton = event.target.closest(".trip-delete");
   if (deleteButton) {
     deleteTrip(deleteButton.dataset.tripId);
-    showToast("Trip delete ho gayi");
+    showToast("Trip deleted");
     renderTripsPage();
   }
 });
