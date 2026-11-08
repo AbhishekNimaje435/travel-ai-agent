@@ -226,6 +226,36 @@ Open **http://127.0.0.1:8000** in your browser.
 
 ---
 
+## 🧩 Design Decisions
+
+This section explains three choices that differ from the typical project setup, and why they were made.
+
+### 1. Custom tool-calling agent instead of a LangChain prebuilt agent
+
+The agent is built with `langchain-core` message types and `ChatGroq.bind_tools()`, with an explicit loop in `agent/travel_agent.py`:
+
+1. Send the system prompt and user query to the LLM with the tools attached.
+2. If the LLM returns tool calls, run each tool and add the result as a `ToolMessage`.
+3. Repeat until the LLM returns a final answer without tool calls (maximum 12 rounds).
+
+**Why not `create_react_agent` or `AgentExecutor`:** The loop is short and easy to explain in a viva. It also gives direct control over token usage (tool outputs are shortened to 5 items), error handling per tool, and the JSON mode retry. The same pattern is what the ReAct and OpenAI tool-calling agents do internally, so this meets the "ReAct / ToolCalling agent" objective in principle.
+
+### 2. HTML, CSS, and JavaScript frontend, with Streamlit kept for reference
+
+The main user interface is a custom frontend in the `frontend/` folder, served by FastAPI. The project also contains an earlier Streamlit version in `app.py`, which uses the same agent.
+
+**Why:** A custom frontend gives full control over layout and interactions (sidebar pages, tabs, favourites, saved trips, and a chat panel). Streamlit reruns the whole script on each click, which makes these features harder to build smoothly. Both versions use the same `agent/` and `tools/` code, so the choice does not affect the agent logic.
+
+### 3. JSON and browser storage instead of SQL
+
+The data is small (30 to 40 records per dataset) and read-only, so JSON files are loaded directly and filtered in Python. Favourites and saved trips are stored in the browser's `localStorage`.
+
+**Why not SQL:** A database adds setup and maintenance without a clear benefit at this size. The schema is documented in the data and the code, and the sample data has no duplicate IDs (checked by `eda_analysis.py`).
+
+**What would change with SQL:** Saved trips and favourites would need user accounts and a server-side database (SQLite for a demo, or PostgreSQL for production). Normalized tables would hold `users`, `trips`, `favourites`, `hotels`, `places`, and `flights`, with indexes on city and route columns. This is listed under Future Scope.
+
+---
+
 ## ⚠️ Limitations
 
 - **Sample data:** `flights.json`, `hotels.json`, and `places.json` are sample datasets. Some records look synthetic (attraction names and types do not always match, and some flight durations are unrealistic).
