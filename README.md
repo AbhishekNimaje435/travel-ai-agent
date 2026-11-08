@@ -6,15 +6,6 @@ An agentic AI travel planner built with **LangChain**, **Groq (LLM)**, **FastAPI
 
 > The free hosting plan sleeps after inactivity. The first load can take 30 to 60 seconds.
 
----
-
-| Home and trip planner | Trip plan result |
-|---|---|
-| ![Home](docs/screenshots/home.png) | ![Result](docs/screenshots/result.png) |
-
-> Add your screenshots in a `docs/screenshots/` folder and update the paths above.
-
----
 
 ## 🎯 Problem Statement
 
