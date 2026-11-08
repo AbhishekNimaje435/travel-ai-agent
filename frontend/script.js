@@ -519,7 +519,9 @@ async function buildItinerary() {
 }
 
 function renderItinerary(data) {
-  itinMessage.textContent = data.messages.join(" ");
+  itinMessage.innerHTML = data.messages
+    .map((message) => `<div>• ${message}</div>`)
+    .join("");
 
   const dayCards = data.days
     .map((day, index) => {
