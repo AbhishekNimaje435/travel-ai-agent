@@ -200,22 +200,32 @@ def build_itinerary(
     flight_price: int = Query(default=0, ge=0),
     daily_local_expense: int = Query(default=1500, ge=0),
 ) -> dict:
-    """Build a day-wise itinerary from local data only (no LLM call)."""
+    """Build a day-wise itinerary from local data only (no LLM call).
+
+    Places matching the chosen interests come first. If there are not enough,
+    the remaining top-rated places in the city are added so every day has places.
+    """
     city_lower = city.strip().lower()
     wanted_types = {type_name.strip().lower() for type_name in interests.split(",") if type_name.strip()}
 
-    candidate_places = [
+    all_city_places = [
         place
         for place in load_places()
-        if place["city"].lower() == city_lower
-        and place["rating"] >= min_rating
-        and (not wanted_types or place["type"].lower() in wanted_types)
+        if place["city"].lower() == city_lower and place["rating"] >= min_rating
     ]
-    candidate_places.sort(key=lambda place: place["rating"], reverse=True)
+    all_city_places.sort(key=lambda place: place["rating"], reverse=True)
 
-    # Each place is used only once, so the itinerary never repeats a place
+    interest_places = [place for place in all_city_places if place["type"].lower() in wanted_types]
+    other_places = [place for place in all_city_places if place not in interest_places]
+
+    # Interest matches first, then other top-rated places. Each place is used only once.
+    ordered_places = interest_places + other_places if wanted_types else all_city_places
+
     needed_place_count = days * places_per_day
-    selected_places = candidate_places[:needed_place_count]
+    selected_places = ordered_places[:needed_place_count]
+    used_non_interest_count = sum(
+        1 for place in selected_places if wanted_types and place["type"].lower() not in wanted_types
+    )
 
     itinerary_days = []
     for day_number in range(1, days + 1):
@@ -244,10 +254,15 @@ def build_itinerary(
         )
 
     messages = []
+    if used_non_interest_count > 0:
+        messages.append(
+            f"{used_non_interest_count} place(s) do not match your chosen interests. "
+            "They are top-rated places in the city, shown to fill the days."
+        )
     if len(selected_places) < needed_place_count:
         messages.append(
             f"Only {len(selected_places)} places found, {needed_place_count} were needed. "
-            "Try lowering the rating or changing the interests."
+            "Try lowering the rating."
         )
     if top_hotel is None:
         messages.append("No hotel matched these filters in this city, so hotel cost is not included.")
@@ -261,7 +276,6 @@ def build_itinerary(
         "budget": budget,
         "messages": messages,
     }
-
 
 @app.post("/api/plan")
 def create_trip_plan(request: TripRequest) -> dict:
