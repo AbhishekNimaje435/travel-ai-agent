@@ -156,7 +156,7 @@
 
       </div>
 
-      <!-- Plan Trip page: search form, tabs and result (same as before) -->
+      <!-- Plan Trip page: search form, tabs and result -->
       <div class="page" id="page-plan" data-page="plan" hidden>
 
         <div class="page-heading">
@@ -418,7 +418,10 @@
         <section class="result-box" id="result-box" hidden>
           <div class="result-header result-header-row">
             <h2>Your Trip Plan</h2>
-            <button type="button" class="save-trip-button" id="save-trip-button" hidden>💾 Save trip</button>
+            <div class="result-actions">
+              <button type="button" class="save-trip-button" id="save-trip-button" hidden>💾 Save trip</button>
+              <button type="button" class="save-trip-button" id="download-json-button" hidden>⬇️ Download JSON</button>
+            </div>
           </div>
           <div class="loading" id="loading" hidden>
             <span class="spinner"></span>

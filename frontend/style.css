@@ -1402,3 +1402,10 @@ button {
     grid-template-columns: 1fr;
   }
 }
+
+/* ---------- Result action buttons ---------- */
+.result-actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}

@@ -15,16 +15,17 @@ from langchain_groq import ChatGroq
 from pydantic import BaseModel, Field, model_validator
 
 from agent.query_builder import build_user_query
+
+from tools.budget_tool import calculate_trip_budget
+
+load_dotenv()
 from agent.travel_agent import (
     ALL_TOOL_NAMES,
     AVAILABLE_GROQ_MODELS,
     DEFAULT_TEMPERATURE,
     run_travel_agent,
+    run_travel_agent_json,
 )
-from tools.budget_tool import calculate_trip_budget
-
-load_dotenv()
-
 BASE_DIRECTORY = Path(__file__).parent
 FRONTEND_DIRECTORY = BASE_DIRECTORY / "frontend"
 HOTELS_FILE_PATH = BASE_DIRECTORY / "data" / "hotels.json"
@@ -296,6 +297,41 @@ def create_trip_plan(request: TripRequest) -> dict:
             detail=f"Trip plan generate nahi ho saka: {unexpected_error}",
         )
     return {"plan": plan_text}
+
+@app.post("/api/plan/json")
+def create_trip_plan_json(request: TripRequest) -> dict:
+    """Run the travel agent and return the trip plan as structured JSON."""
+    user_query = build_user_query(
+        source_city=request.source_city,
+        destination_city=request.destination_city,
+        start_date=request.start_date,
+        end_date=request.end_date,
+        travellers=request.travellers,
+        flight_preference=request.flight_preference,
+        include_return_flight=request.include_return_flight,
+        minimum_stars=request.minimum_stars,
+        maximum_hotel_price=request.maximum_hotel_price,
+        daily_local_expense=request.daily_local_expense,
+        total_budget=request.total_budget,
+        amenities=request.amenities,
+        interests=request.interests,
+        extra_requirements=request.extra_requirements,
+    )
+    try:
+        trip_json = run_travel_agent_json(
+            user_query,
+            model_name=request.model_name,
+            temperature=request.temperature,
+            enabled_tool_names=request.enabled_tools,
+        )
+    except ValueError as configuration_error:
+        raise HTTPException(status_code=400, detail=str(configuration_error))
+    except Exception as unexpected_error:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Trip JSON could not be generated: {unexpected_error}",
+        )
+    return {"trip": trip_json}
 
 
 @app.post("/api/chat")

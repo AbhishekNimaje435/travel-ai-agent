@@ -88,8 +88,10 @@ const resultBox = document.getElementById("result-box");
 const loadingBox = document.getElementById("loading");
 const resultText = document.getElementById("result-text");
 const saveTripButton = document.getElementById("save-trip-button");
+const downloadJsonButton = document.getElementById("download-json-button");
 
 let currentPlan = null;
+let lastRequestBody = null;
 
 searchForm.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -138,6 +140,7 @@ searchForm.addEventListener("submit", async (event) => {
     ],
   };
 
+  lastRequestBody = requestBody;
   showResultLoading();
 
   try {
@@ -169,6 +172,7 @@ function showResultLoading() {
   resultText.innerHTML = "";
   resultText.classList.remove("error");
   saveTripButton.hidden = true;
+  downloadJsonButton.hidden = true;
   currentPlan = null;
   searchButton.disabled = true;
   searchButton.textContent = "Planning...";
@@ -191,6 +195,7 @@ function showResultText(planText) {
   saveTripButton.hidden = false;
   saveTripButton.textContent = "💾 Save trip";
   saveTripButton.disabled = false;
+  downloadJsonButton.hidden = false;
 }
 
 function showResultError(message) {
@@ -216,6 +221,48 @@ saveTripButton.addEventListener("click", () => {
   saveTripButton.disabled = true;
   saveTripButton.textContent = "✅ Saved";
   showToast("Trip saved to My Trips");
+});
+
+// ---------- Download JSON: calls /api/plan/json with the last form values ----------
+downloadJsonButton.addEventListener("click", async () => {
+  if (!lastRequestBody) return;
+
+  const originalText = downloadJsonButton.textContent;
+  downloadJsonButton.disabled = true;
+  downloadJsonButton.textContent = "Preparing JSON...";
+
+  try {
+    const response = await fetch("/api/plan/json", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(lastRequestBody),
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      showToast(data.detail || "JSON could not be generated");
+      return;
+    }
+
+    const jsonText = JSON.stringify(data.trip, null, 2);
+    const blob = new Blob([jsonText], { type: "application/json" });
+    const fileUrl = URL.createObjectURL(blob);
+
+    const downloadLink = document.createElement("a");
+    downloadLink.href = fileUrl;
+    downloadLink.download = `trip_${lastRequestBody.source_city}_${lastRequestBody.destination_city}_${lastRequestBody.start_date}.json`;
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    downloadLink.remove();
+    URL.revokeObjectURL(fileUrl);
+
+    showToast("JSON downloaded");
+  } catch (error) {
+    showToast("Could not connect to the server");
+  } finally {
+    downloadJsonButton.disabled = false;
+    downloadJsonButton.textContent = originalText;
+  }
 });
 
 // ---------- Hotels tab: loads from /api/hotels (no Groq call) ----------

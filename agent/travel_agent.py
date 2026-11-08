@@ -26,6 +26,21 @@ MAXIMUM_TOOL_ROUNDS = 12
 MAXIMUM_ITEMS_PER_TOOL_OUTPUT = 5
 GROQ_MAX_RETRIES = 5
 
+JSON_OUTPUT_INSTRUCTIONS = """
+Return ONLY a valid JSON object. No markdown, no code fences, no text before or after.
+Use this exact structure:
+{
+  "trip_summary": {"source": "", "destination": "", "start_date": "", "end_date": "", "travellers": 0},
+  "flight": {"flight_id": "", "airline": "", "departure": "", "arrival": "", "price": 0, "note": ""},
+  "hotel": {"hotel_id": "", "name": "", "stars": 0, "price_per_night": 0, "amenities": [], "nights": 0},
+  "weather": [{"date": "", "max_c": 0, "min_c": 0, "rain_percent": 0, "condition": ""}],
+  "itinerary": [{"day": 1, "date": "", "places": [{"name": "", "type": "", "rating": 0}]}],
+  "budget": {"flight": 0, "hotel": 0, "local_expenses": 0, "total": 0, "budget_limit": 0, "within_budget": true},
+  "messages": []
+}
+Use only data returned by the tools. If a value is unknown, use null or an empty list. Numbers must be numbers, not strings.
+"""
+
 TOOLS_BY_NAME = {
     "search_flights": search_flights,
     "search_hotels": search_hotels,
@@ -63,7 +78,6 @@ Tool usage rules:
 4. If the user asks for a return flight, call search_flights once more with source and destination swapped and travel_date set to the return date.
 5. Choose the flight by the user's preference: cheapest_flight for "cheapest", fastest_flight for "fastest".
 6. Call search_places only once, without place_type. If the user lists attraction interests, pick only the returned places whose type matches those interests. Never call search_places more than once.
-
 
 Answer rules:
 1. Use only tool data. Never invent flights, hotels, places, prices, timings, or activities.
@@ -183,3 +197,55 @@ def run_travel_agent(
             )
 
     return "The agent could not finish the plan within the allowed number of steps. Please try a simpler query."
+
+
+def run_travel_agent_json(
+    user_query: str,
+    model_name: str = GROQ_MODEL_NAME,
+    temperature: float = DEFAULT_TEMPERATURE,
+    enabled_tool_names: list[str] | None = None,
+) -> dict:
+    """Run the agent and return the trip plan as a Python dictionary (parsed JSON).
+
+    Raises:
+        ValueError: If the model's answer is not valid JSON even after one retry.
+    """
+    if enabled_tool_names is None:
+        enabled_tool_names = ALL_TOOL_NAMES
+
+    chat_model = create_chat_model(model_name, temperature, enabled_tool_names)
+    conversation_messages = [
+        SystemMessage(content=build_system_prompt(enabled_tool_names) + JSON_OUTPUT_INSTRUCTIONS),
+        HumanMessage(content=user_query),
+    ]
+
+    # Step 1: let the agent use tools and build the plan
+    final_text = ""
+    for _ in range(MAXIMUM_TOOL_ROUNDS):
+        ai_response = chat_model.invoke(conversation_messages)
+        conversation_messages.append(ai_response)
+
+        if not ai_response.tool_calls:
+            final_text = ai_response.content
+            break
+
+        for tool_call in ai_response.tool_calls:
+            tool_output = run_tool_call(tool_call)
+            conversation_messages.append(
+                ToolMessage(content=tool_output, tool_call_id=tool_call["id"])
+            )
+
+    # Step 2: parse the JSON, with one retry if it is invalid
+    for attempt in range(2):
+        cleaned_text = final_text.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+        try:
+            return json.loads(cleaned_text)
+        except json.JSONDecodeError:
+            if attempt == 1:
+                break
+            conversation_messages.append(
+                HumanMessage(content="Your last answer was not valid JSON. Return only the JSON object again.")
+            )
+            final_text = chat_model.invoke(conversation_messages).content
+
+    raise ValueError("The agent did not return valid JSON. Please try again.")
