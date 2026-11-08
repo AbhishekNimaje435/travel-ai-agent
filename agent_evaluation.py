@@ -1,7 +1,6 @@
 """Runs test queries through the travel agent and records the results for the agent performance report."""
 
 import csv
-import json
 import time
 from datetime import date, timedelta
 
@@ -24,73 +23,120 @@ def make_test_cases():
         {
             "id": "T01",
             "name": "Basic Goa trip, cheapest flight",
-            "query": f"Plan a 3-day trip from Hyderabad to Goa. {dates_text(start, end)} Travellers: 1. Flight preference: cheapest. Hotel at least 4 stars, up to Rs 7000 per night. Total budget Rs 30000.",
+            "query": (
+                f"Plan a 3-day trip from Hyderabad to Goa. {dates_text(start, end)} "
+                "Travellers: 1. Flight preference: cheapest. Hotel at least 4 stars, up to Rs 7000 per night. "
+                "Total budget Rs 30000."
+            ),
             "expect_budget_under": 30000,
         },
         {
             "id": "T02",
             "name": "Two travellers, fastest flight",
-            "query": f"Plan a 3-day trip from Hyderabad to Goa. {dates_text(start, end)} Travellers: 2. Flight preference: fastest. Hotel at least 4 stars, up to Rs 7000 per night. Total budget Rs 40000.",
+            "query": (
+                f"Plan a 3-day trip from Hyderabad to Goa. {dates_text(start, end)} "
+                "Travellers: 2. Flight preference: fastest. Hotel at least 4 stars, up to Rs 7000 per night. "
+                "Total budget Rs 40000."
+            ),
             "expect_budget_under": 40000,
         },
         {
             "id": "T03",
             "name": "Return flight included",
-            "query": f"Plan a 3-day trip from Hyderabad to Goa with a return flight. {dates_text(start, end)} Travellers: 1. Flight preference: cheapest. Hotel at least 4 stars, up to Rs 7000 per night. Total budget Rs 30000.",
+            "query": (
+                f"Plan a 3-day trip from Hyderabad to Goa with a return flight. {dates_text(start, end)} "
+                "Travellers: 1. Flight preference: cheapest. Hotel at least 4 stars, up to Rs 7000 per night. "
+                "Total budget Rs 30000."
+            ),
             "expect_budget_under": 30000,
         },
         {
             "id": "T04",
             "name": "Over-budget trip (should warn)",
-            "query": f"Plan a 3-day trip from Delhi to Goa. {dates_text(start, end)} Travellers: 4. Flight preference: cheapest. Hotel at least 4 stars, up to Rs 7000 per night. Total budget Rs 10000.",
+            "query": (
+                f"Plan a 3-day trip from Delhi to Goa. {dates_text(start, end)} "
+                "Travellers: 4. Flight preference: cheapest. Hotel at least 4 stars, up to Rs 7000 per night. "
+                "Total budget Rs 10000."
+            ),
             "expect_budget_under": 10000,
         },
         {
             "id": "T05",
             "name": "Hotel amenity filter (pool)",
-            "query": f"Plan a 3-day trip from Hyderabad to Goa. {dates_text(start, end)} Travellers: 1. Hotel must have pool. Hotel at least 4 stars, up to Rs 7000 per night. Total budget Rs 30000.",
+            "query": (
+                f"Plan a 3-day trip from Hyderabad to Goa. {dates_text(start, end)} "
+                "Travellers: 1. Hotel must have pool. Hotel at least 4 stars, up to Rs 7000 per night. "
+                "Total budget Rs 30000."
+            ),
             "expect_budget_under": 30000,
         },
         {
             "id": "T06",
             "name": "Interests: temple and museum",
-            "query": f"Plan a 3-day trip from Hyderabad to Chennai. {dates_text(start, end)} Travellers: 1. Attraction interests: temple, museum. Hotel at least 3 stars, up to Rs 6000 per night. Total budget Rs 30000.",
+            "query": (
+                f"Plan a 3-day trip from Hyderabad to Chennai. {dates_text(start, end)} "
+                "Travellers: 1. Attraction interests: temple, museum. Hotel at least 3 stars, up to Rs 6000 per night. "
+                "Total budget Rs 30000."
+            ),
             "expect_budget_under": 30000,
         },
         {
             "id": "T07",
             "name": "Kolkata trip, no interests",
-            "query": f"Plan a 3-day trip from Delhi to Kolkata. {dates_text(start, end)} Travellers: 1. No specific interests. Hotel at least 4 stars, up to Rs 7000 per night. Total budget Rs 30000.",
+            "query": (
+                f"Plan a 3-day trip from Delhi to Kolkata. {dates_text(start, end)} "
+                "Travellers: 1. No specific interests. Hotel at least 4 stars, up to Rs 7000 per night. "
+                "Total budget Rs 30000."
+            ),
             "expect_budget_under": 30000,
         },
         {
             "id": "T08",
             "name": "Jaipur trip, fort and monument",
-            "query": f"Plan a 3-day trip from Mumbai to Jaipur. {dates_text(start, end)} Travellers: 1. Attraction interests: fort, monument. Hotel at least 4 stars, up to Rs 7000 per night. Total budget Rs 30000.",
+            "query": (
+                f"Plan a 3-day trip from Mumbai to Jaipur. {dates_text(start, end)} "
+                "Travellers: 1. Attraction interests: fort, monument. Hotel at least 4 stars, up to Rs 7000 per night. "
+                "Total budget Rs 30000."
+            ),
             "expect_budget_under": 30000,
         },
         {
             "id": "T09",
             "name": "Strict star filter (5 stars)",
-            "query": f"Plan a 2-day trip from Hyderabad to Goa. {dates_text(start, start + timedelta(days=1))} Travellers: 1. Hotel must be 5 stars. Up to Rs 7000 per night. Total budget Rs 30000.",
+            "query": (
+                f"Plan a 2-day trip from Hyderabad to Goa. "
+                f"{dates_text(start, start + timedelta(days=1))} "
+                "Travellers: 1. Hotel must be 5 stars. Up to Rs 7000 per night. Total budget Rs 30000."
+            ),
             "expect_budget_under": 30000,
         },
         {
             "id": "T10",
             "name": "Extra requirement: vegetarian food",
-            "query": f"Plan a 3-day trip from Hyderabad to Goa. {dates_text(start, end)} Travellers: 1. Hotel at least 4 stars, up to Rs 7000 per night. Total budget Rs 30000. Extra requirement: vegetarian food, relaxed pace.",
+            "query": (
+                f"Plan a 3-day trip from Hyderabad to Goa. {dates_text(start, end)} "
+                "Travellers: 1. Hotel at least 4 stars, up to Rs 7000 per night. Total budget Rs 30000. "
+                "Extra requirement: vegetarian food, relaxed pace."
+            ),
             "expect_budget_under": 30000,
         },
         {
             "id": "T11",
             "name": "Mumbai trip, 4 days",
-            "query": f"Plan a 4-day trip from Bangalore to Mumbai. {dates_text(start, start + timedelta(days=3))} Travellers: 1. Hotel at least 4 stars, up to Rs 7000 per night. Total budget Rs 40000.",
+            "query": (
+                f"Plan a 4-day trip from Bangalore to Mumbai. "
+                f"{dates_text(start, start + timedelta(days=3))} "
+                "Travellers: 1. Hotel at least 4 stars, up to Rs 7000 per night. Total budget Rs 40000."
+            ),
             "expect_budget_under": 40000,
         },
         {
             "id": "T12",
             "name": "Invalid city (should refuse or explain)",
-            "query": f"Plan a 3-day trip from Hyderabad to Paris. {dates_text(start, end)} Travellers: 1. Hotel at least 4 stars, up to Rs 7000 per night. Total budget Rs 30000.",
+            "query": (
+                f"Plan a 3-day trip from Hyderabad to Paris. {dates_text(start, end)} "
+                "Travellers: 1. Hotel at least 4 stars, up to Rs 7000 per night. Total budget Rs 30000."
+            ),
             "expect_budget_under": None,
         },
     ]
@@ -98,15 +144,20 @@ def make_test_cases():
 
 def check_result(test_case, trip_json):
     """Return a dictionary of pass/fail checks for one result."""
-    checks = {}
-
     if trip_json is None:
-        return {"json_valid": False, "all_sections_present": False, "itinerary_days_filled": False,
-                "budget_within_limit": False, "budget_math_correct": False}
+        return {
+            "json_valid": False,
+            "all_sections_present": False,
+            "itinerary_days_filled": False,
+            "budget_within_limit": False,
+            "budget_math_correct": False,
+        }
 
     required_keys = ["trip_summary", "flight", "hotel", "weather", "itinerary", "budget", "messages"]
-    checks["json_valid"] = True
-    checks["all_sections_present"] = all(key in trip_json for key in required_keys)
+    checks = {
+        "json_valid": True,
+        "all_sections_present": all(key in trip_json for key in required_keys),
+    }
 
     itinerary = trip_json.get("itinerary", [])
     checks["itinerary_days_filled"] = bool(itinerary) and all(day.get("places") for day in itinerary)
@@ -125,7 +176,7 @@ def check_result(test_case, trip_json):
 
 
 def load_finished_ids():
-    """Return the IDs of tests that already have a row in the results CSV."""
+    """Return the IDs of tests that already have a successful row in the results CSV."""
     try:
         with open(OUTPUT_CSV, "r", encoding="utf-8") as csv_file:
             return {row["id"] for row in csv.DictReader(csv_file) if row.get("error") == ""}
@@ -184,6 +235,7 @@ def run_evaluation():
         writer.writerows(results)
 
     print(f"\nResults saved to {OUTPUT_CSV}")
+
 
 if __name__ == "__main__":
     run_evaluation()

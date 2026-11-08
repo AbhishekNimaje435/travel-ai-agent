@@ -15,10 +15,6 @@ from langchain_groq import ChatGroq
 from pydantic import BaseModel, Field, model_validator
 
 from agent.query_builder import build_user_query
-
-from tools.budget_tool import calculate_trip_budget
-
-load_dotenv()
 from agent.travel_agent import (
     ALL_TOOL_NAMES,
     AVAILABLE_GROQ_MODELS,
@@ -26,6 +22,10 @@ from agent.travel_agent import (
     run_travel_agent,
     run_travel_agent_json,
 )
+from tools.budget_tool import calculate_trip_budget
+
+load_dotenv()
+
 BASE_DIRECTORY = Path(__file__).parent
 FRONTEND_DIRECTORY = BASE_DIRECTORY / "frontend"
 HOTELS_FILE_PATH = BASE_DIRECTORY / "data" / "hotels.json"
@@ -277,6 +277,7 @@ def build_itinerary(
         "messages": messages,
     }
 
+
 @app.post("/api/plan")
 def create_trip_plan(request: TripRequest) -> dict:
     """Run the travel agent for the given trip details and return the plan text."""
@@ -311,6 +312,7 @@ def create_trip_plan(request: TripRequest) -> dict:
             detail=f"Trip plan generate nahi ho saka: {unexpected_error}",
         )
     return {"plan": plan_text}
+
 
 @app.post("/api/plan/json")
 def create_trip_plan_json(request: TripRequest) -> dict:
