@@ -8,8 +8,6 @@ An agentic AI travel planner built with **LangChain**, **Groq (LLM)**, **FastAPI
 
 ---
 
-## 📸 Screenshots
-
 | Home and trip planner | Trip plan result |
 |---|---|
 | ![Home](docs/screenshots/home.png) | ![Result](docs/screenshots/result.png) |
