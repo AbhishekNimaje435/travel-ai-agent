@@ -2,7 +2,7 @@
 
 An agentic AI travel planner built with **LangChain**, **Groq (LLM)**, **FastAPI**, and a custom **HTML/CSS/JavaScript** frontend. Describe your trip in plain terms, and the AI agent decides which tools to call (flights, hotels, attractions, weather, and budget) to build a complete, budget-aware travel plan. Browse hotels, attractions, and day-wise itineraries instantly, save favourites, keep your trip plans, and chat with a travel assistant.
 
-🔗 **Live demo:** [https://YOUR-APP-NAME.onrender.com](https://travel-ai-agent-3llr.onrender.com)
+🔗 **Live demo:** [https://travel-ai-agent-3llr.onrender.com]
 
 > The free hosting plan sleeps after inactivity. The first load can take 30 to 60 seconds.
 
