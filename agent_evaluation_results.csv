@@ -1,0 +1,13 @@
+id,name,duration_seconds,error,json_valid,all_sections_present,itinerary_days_filled,budget_within_limit,budget_math_correct
+T01,"Basic Goa trip, cheapest flight",79.0,,True,True,True,True,True
+T02,"Two travellers, fastest flight",123.5,,True,True,True,True,True
+T03,Return flight included,79.2,,True,True,True,True,False
+T04,Over-budget trip (should warn),70.3,,True,True,True,False,True
+T05,Hotel amenity filter (pool),86.8,,True,True,True,True,True
+T06,Interests: temple and museum,25.3,,True,True,False,True,True
+T07,"Kolkata trip, no interests",66.2,,True,True,True,True,True
+T08,"Jaipur trip, fort and monument",10.4,,True,True,False,True,True
+T09,Strict star filter (5 stars),13.6,"Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m6ny6htqe2nadh8e2w1jxbb8` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 196356, Requested 4389. Please try again in 5m21.84s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",False,False,False,False,False
+T10,Extra requirement: vegetarian food,3.0,"Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m6ny6htqe2nadh8e2w1jxbb8` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 197697, Requested 3652. Please try again in 9m42.768s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",False,False,False,False,False
+T11,"Mumbai trip, 4 days",1.0,"Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m6ny6htqe2nadh8e2w1jxbb8` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 197648, Requested 3001. Please try again in 4m40.368s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",False,False,False,False,False
+T12,Invalid city (should refuse or explain),1.1,"Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m6ny6htqe2nadh8e2w1jxbb8` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 197599, Requested 3001. Please try again in 4m19.2s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",False,False,False,False,False
