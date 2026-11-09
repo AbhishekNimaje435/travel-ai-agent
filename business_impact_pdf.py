@@ -16,7 +16,9 @@ def build_styles():
         "title": ParagraphStyle("Title", parent=base_styles["Title"], fontSize=20, spaceAfter=10),
         "heading": ParagraphStyle("Heading", parent=base_styles["Heading2"], fontSize=14, spaceBefore=12, spaceAfter=6),
         "body": ParagraphStyle("Body", parent=base_styles["BodyText"], fontSize=10, leading=14, spaceAfter=6),
-        "bullet": ParagraphStyle("Bullet", parent=base_styles["BodyText"], fontSize=10, leading=14, leftIndent=12, spaceAfter=3),
+        "bullet": ParagraphStyle(
+            "Bullet", parent=base_styles["BodyText"], fontSize=10, leading=14, leftIndent=12, spaceAfter=3
+        ),
     }
 
 
@@ -46,7 +48,9 @@ def build_story(styles):
     story = []
 
     story.append(Paragraph("Business Impact Assessment: AI Travel Planning Assistant", styles["title"]))
-    story.append(Paragraph("How an AI travel planner can create value for travel companies and their customers.", styles["body"]))
+    story.append(
+        Paragraph("How an AI travel planner can create value for travel companies and their customers.", styles["body"])
+    )
 
     # 1. Problem and opportunity
     story.append(Paragraph("1. Problem and Opportunity", styles["heading"]))
@@ -66,10 +70,22 @@ def build_story(styles):
         make_table(
             [
                 ["Target", "Need", "How the product helps"],
-                ["Individual travellers", "Quick, budget-friendly plans", "Single form gives flights, hotels, places, weather, and budget"],
-                ["Online travel platforms (MakeMyTrip, ClearTrip, Ixigo)", "Self-service planning, lower support load", "Embedded planner that answers trip questions automatically"],
+                [
+                    "Individual travellers",
+                    "Quick, budget-friendly plans",
+                    "Single form gives flights, hotels, places, weather, and budget",
+                ],
+                [
+                    "Online travel platforms (MakeMyTrip, ClearTrip, Ixigo)",
+                    "Self-service planning, lower support load",
+                    "Embedded planner that answers trip questions automatically",
+                ],
                 ["Travel agencies", "Faster itinerary drafts for clients", "Day-wise itinerary and budget in seconds"],
-                ["Hotels and resorts", "Better visibility and bookings", "Hotel recommendations filtered by stars, price, and amenities"],
+                [
+                    "Hotels and resorts",
+                    "Better visibility and bookings",
+                    "Hotel recommendations filtered by stars, price, and amenities",
+                ],
             ]
         )
     )
@@ -92,11 +108,27 @@ def build_story(styles):
         make_table(
             [
                 ["Benefit", "Description", "Example measure"],
-                ["Lower support cost", "Common trip questions answered by the assistant and planner", "Share of support tickets on itinerary and budget questions"],
-                ["Higher engagement", "Users spend more time on the platform exploring plans", "Session length and plan generations per user"],
-                ["Better conversion", "Planner links users to hotels and flights they liked", "Click-through from plan to booking page"],
+                [
+                    "Lower support cost",
+                    "Common trip questions answered by the assistant and planner",
+                    "Share of support tickets on itinerary and budget questions",
+                ],
+                [
+                    "Higher engagement",
+                    "Users spend more time on the platform exploring plans",
+                    "Session length and plan generations per user",
+                ],
+                [
+                    "Better conversion",
+                    "Planner links users to hotels and flights they liked",
+                    "Click-through from plan to booking page",
+                ],
                 ["Faster sales cycle", "Agencies produce draft itineraries quickly", "Time to first itinerary draft"],
-                ["Data for product decisions", "Logs show which destinations and preferences are popular", "Most requested cities and interests"],
+                [
+                    "Data for product decisions",
+                    "Logs show which destinations and preferences are popular",
+                    "Most requested cities and interests",
+                ],
             ]
         )
     )
@@ -115,7 +147,11 @@ def build_story(styles):
         make_table(
             [
                 ["Cost item", "Prototype", "Production estimate"],
-                ["LLM (Groq or similar)", "Free tier (daily token limit)", "Pay per token, depends on plan requests per day"],
+                [
+                    "LLM (Groq or similar)",
+                    "Free tier (daily token limit)",
+                    "Pay per token, depends on plan requests per day",
+                ],
                 ["Hosting", "Render free plan", "Paid web service for always-on use"],
                 ["Weather API", "Open-Meteo (free, no key)", "Free for non-commercial use, check terms"],
                 ["Data", "Sample JSON datasets", "Partner APIs or data licences"],

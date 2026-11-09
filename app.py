@@ -13,7 +13,6 @@ from agent.travel_agent import (
 )
 from styles import APP_CSS, HERO_HTML, SIDEBAR_BRAND_HTML
 
-
 load_dotenv()
 
 
@@ -45,7 +44,6 @@ TOOL_LABELS = {
     "get_weather_forecast": "⛅ Weather (Open-Meteo)",
     "estimate_trip_budget": "💼 Budget estimate",
 }
-
 
 
 with st.sidebar:
@@ -98,9 +96,7 @@ def build_user_query(
     else:
         query_lines.append("One-way trip only, no return flight.")
 
-    query_lines.append(
-        f"Hotel: at least {minimum_stars} stars, up to Rs {maximum_hotel_price} per night."
-    )
+    query_lines.append(f"Hotel: at least {minimum_stars} stars, up to Rs {maximum_hotel_price} per night.")
     if amenities:
         query_lines.append(f"Hotel amenities required: {', '.join(amenities)}.")
     else:
@@ -206,7 +202,4 @@ if submit_button:
         except ValueError as configuration_error:
             st.error(f"Configuration error: {configuration_error}")
         except Exception as unexpected_error:
-            st.error(
-                "Trip plan generate nahi ho saka. Thodi der baad dobara try karo. "
-                f"Details: {unexpected_error}"
-            )
+            st.error("Trip plan generate nahi ho saka. Thodi der baad dobara try karo. " f"Details: {unexpected_error}")

@@ -51,11 +51,20 @@ TOOLS_BY_NAME = {
 ALL_TOOL_NAMES = list(TOOLS_BY_NAME.keys())
 
 TOOL_DESCRIPTIONS = {
-    "search_flights": "- search_flights: finds one-way flights between two cities, with cheapest and fastest options. Accepts travel_date.",
-    "search_hotels": "- search_hotels: finds hotels in a city, filtered by minimum stars and maximum price per night. Each hotel has an amenities list.",
+    "search_flights": (
+        "- search_flights: finds one-way flights between two cities, with cheapest and fastest options. "
+        "Accepts travel_date."
+    ),
+    "search_hotels": (
+        "- search_hotels: finds hotels in a city, filtered by minimum stars and maximum price per night. "
+        "Each hotel has an amenities list."
+    ),
     "search_places": "- search_places: finds attractions in a city, filtered by type and minimum rating.",
     "get_weather_forecast": "- get_weather_forecast: gives the daily forecast for a city between two dates.",
-    "estimate_trip_budget": "- estimate_trip_budget: calculates the total cost from flight price, hotel price per night, number of days, and daily local expense.",
+    "estimate_trip_budget": (
+        "- estimate_trip_budget: calculates the total cost from flight price, hotel price per night, "
+        "number of days, and daily local expense."
+    ),
 }
 
 LIST_KEYS_IN_TOOL_OUTPUT = ("matching_flights", "ranked_hotels", "ranked_places", "daily_forecast")
@@ -94,7 +103,6 @@ Answer rules:
 12. Follow the user's extra requirements when the tools allow it. If you cannot, say so.
 13. If a tool returns an error or no data, say so clearly and continue with what you have.
 14. If you include places that do not match the user's interests, say so in the answer, for example "Beach places were not available, so these popular places are shown instead."
-
 
 Final answer format:
 1. Trip Summary (dates, travellers, preferences)
@@ -194,9 +202,7 @@ def run_travel_agent(
 
         for tool_call in ai_response.tool_calls:
             tool_output = run_tool_call(tool_call)
-            conversation_messages.append(
-                ToolMessage(content=tool_output, tool_call_id=tool_call["id"])
-            )
+            conversation_messages.append(ToolMessage(content=tool_output, tool_call_id=tool_call["id"]))
 
     return "The agent could not finish the plan within the allowed number of steps. Please try a simpler query."
 
@@ -233,9 +239,7 @@ def run_travel_agent_json(
 
         for tool_call in ai_response.tool_calls:
             tool_output = run_tool_call(tool_call)
-            conversation_messages.append(
-                ToolMessage(content=tool_output, tool_call_id=tool_call["id"])
-            )
+            conversation_messages.append(ToolMessage(content=tool_output, tool_call_id=tool_call["id"]))
 
     # Step 2: parse the JSON, with one retry if it is invalid
     for attempt in range(2):

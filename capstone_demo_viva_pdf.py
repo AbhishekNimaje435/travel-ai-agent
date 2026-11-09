@@ -16,9 +16,13 @@ def build_styles():
     return {
         "title": ParagraphStyle("Title", parent=base_styles["Title"], fontSize=20, spaceAfter=10),
         "heading": ParagraphStyle("Heading", parent=base_styles["Heading2"], fontSize=14, spaceBefore=12, spaceAfter=6),
-        "subheading": ParagraphStyle("Subheading", parent=base_styles["Heading3"], fontSize=11, spaceBefore=8, spaceAfter=4),
+        "subheading": ParagraphStyle(
+            "Subheading", parent=base_styles["Heading3"], fontSize=11, spaceBefore=8, spaceAfter=4
+        ),
         "body": ParagraphStyle("Body", parent=base_styles["BodyText"], fontSize=10, leading=14, spaceAfter=6),
-        "bullet": ParagraphStyle("Bullet", parent=base_styles["BodyText"], fontSize=10, leading=14, leftIndent=12, spaceAfter=3),
+        "bullet": ParagraphStyle(
+            "Bullet", parent=base_styles["BodyText"], fontSize=10, leading=14, leftIndent=12, spaceAfter=3
+        ),
     }
 
 
@@ -171,7 +175,12 @@ def build_story(styles):
 
     story.append(Paragraph("Capstone Demo Script and Viva Preparation", styles["title"]))
     story.append(Paragraph(f"Live URL: {LIVE_URL}", styles["body"]))
-    story.append(Paragraph("Total demo time: about 5 minutes. Keep to the times shown, and leave 1 to 2 minutes for questions.", styles["body"]))
+    story.append(
+        Paragraph(
+            "Total demo time: about 5 minutes. Keep to the times shown, and leave 1 to 2 minutes for questions.",
+            styles["body"],
+        )
+    )
 
     # Part 1: Demo script
     story.append(Paragraph("Part 1: Live Demo Script (5 minutes)", styles["heading"]))

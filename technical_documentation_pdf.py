@@ -15,10 +15,16 @@ def build_styles():
     return {
         "title": ParagraphStyle("Title", parent=base_styles["Title"], fontSize=20, spaceAfter=10),
         "heading": ParagraphStyle("Heading", parent=base_styles["Heading2"], fontSize=14, spaceBefore=12, spaceAfter=6),
-        "subheading": ParagraphStyle("Subheading", parent=base_styles["Heading3"], fontSize=11, spaceBefore=8, spaceAfter=4),
+        "subheading": ParagraphStyle(
+            "Subheading", parent=base_styles["Heading3"], fontSize=11, spaceBefore=8, spaceAfter=4
+        ),
         "body": ParagraphStyle("Body", parent=base_styles["BodyText"], fontSize=10, leading=14, spaceAfter=6),
-        "bullet": ParagraphStyle("Bullet", parent=base_styles["BodyText"], fontSize=10, leading=14, leftIndent=12, spaceAfter=3),
-        "code": ParagraphStyle("Code", parent=base_styles["Code"], fontSize=8, leading=10, backColor=colors.HexColor("#f2f5fb")),
+        "bullet": ParagraphStyle(
+            "Bullet", parent=base_styles["BodyText"], fontSize=10, leading=14, leftIndent=12, spaceAfter=3
+        ),
+        "code": ParagraphStyle(
+            "Code", parent=base_styles["Code"], fontSize=8, leading=10, backColor=colors.HexColor("#f2f5fb")
+        ),
     }
 
 
@@ -48,7 +54,9 @@ def build_story(styles):
     story = []
 
     story.append(Paragraph("Technical Documentation: AI Travel Planning Assistant", styles["title"]))
-    story.append(Paragraph("Agentic AI capstone project using LangChain, Groq, FastAPI, and a custom frontend.", styles["body"]))
+    story.append(
+        Paragraph("Agentic AI capstone project using LangChain, Groq, FastAPI, and a custom frontend.", styles["body"])
+    )
 
     # 1. Overview
     story.append(Paragraph("1. Project Overview", styles["heading"]))
@@ -110,15 +118,35 @@ def build_story(styles):
         make_table(
             [
                 ["Tool", "Input", "Output", "Data source"],
-                ["search_flights", "source, destination, travel date", "Matching flights, cheapest and fastest", "flights.json"],
+                [
+                    "search_flights",
+                    "source, destination, travel date",
+                    "Matching flights, cheapest and fastest",
+                    "flights.json",
+                ],
                 ["search_hotels", "city, min stars, max price", "Ranked hotels, top recommendation", "hotels.json"],
                 ["search_places", "city, type, min rating", "Ranked places, top 3", "places.json"],
-                ["get_weather_forecast", "city, start date, end date", "Daily max/min temperature, rain %, condition", "Open-Meteo API"],
-                ["estimate_trip_budget", "flight price, hotel price, days, daily expense", "Flight, hotel, local, and total cost", "Calculation"],
+                [
+                    "get_weather_forecast",
+                    "city, start date, end date",
+                    "Daily max/min temperature, rain %, condition",
+                    "Open-Meteo API",
+                ],
+                [
+                    "estimate_trip_budget",
+                    "flight price, hotel price, days, daily expense",
+                    "Flight, hotel, local, and total cost",
+                    "Calculation",
+                ],
             ]
         )
     )
-    story.append(Paragraph("Each tool returns plain dictionaries. The agent receives them as JSON, and list outputs are shortened to 5 items to save tokens.", styles["body"]))
+    story.append(
+        Paragraph(
+            "Each tool returns plain dictionaries. The agent receives them as JSON, and list outputs are shortened to 5 items to save tokens.",
+            styles["body"],
+        )
+    )
 
     # 5. Agent flow
     story.append(Paragraph("5. Agent Flow", styles["heading"]))
@@ -142,9 +170,24 @@ def build_story(styles):
             styles["body"],
         )
     )
-    story.append(Paragraph("<b>Tool usage rules:</b> call each tool once, stop when data is enough, use travel_date, pick cheapest or fastest flight by preference, and call search_places only once.", styles["bullet"]))
-    story.append(Paragraph("<b>Answer rules:</b> use only tool data, no invented places or prices, correct travellers and room math, budget comparison, one-way flight note, amenity filter, closest alternatives when no exact match, and a fallback message when interests have too few places.", styles["bullet"]))
-    story.append(Paragraph("For JSON output, a fixed JSON schema is appended to the prompt, and the answer is validated with json.loads().", styles["body"]))
+    story.append(
+        Paragraph(
+            "<b>Tool usage rules:</b> call each tool once, stop when data is enough, use travel_date, pick cheapest or fastest flight by preference, and call search_places only once.",
+            styles["bullet"],
+        )
+    )
+    story.append(
+        Paragraph(
+            "<b>Answer rules:</b> use only tool data, no invented places or prices, correct travellers and room math, budget comparison, one-way flight note, amenity filter, closest alternatives when no exact match, and a fallback message when interests have too few places.",
+            styles["bullet"],
+        )
+    )
+    story.append(
+        Paragraph(
+            "For JSON output, a fixed JSON schema is appended to the prompt, and the answer is validated with json.loads().",
+            styles["body"],
+        )
+    )
 
     # 7. Key decisions
     story.append(Paragraph("7. Key Design Decisions", styles["heading"]))

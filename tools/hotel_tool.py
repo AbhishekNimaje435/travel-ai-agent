@@ -86,9 +86,7 @@ def search_hotels(
     """
     try:
         all_hotels = load_hotels_from_json()
-        matching_hotels = filter_hotels(
-            all_hotels, city, minimum_stars, maximum_price_per_night
-        )
+        matching_hotels = filter_hotels(all_hotels, city, minimum_stars, maximum_price_per_night)
 
         if not matching_hotels:
             all_city_hotels = filter_hotels(all_hotels, city, minimum_stars=1)

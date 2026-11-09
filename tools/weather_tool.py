@@ -89,13 +89,15 @@ def parse_daily_forecast(raw_forecast: dict) -> list[dict]:
     forecast_days = []
     for index, date in enumerate(daily_data["time"]):
         weather_code = daily_data["weathercode"][index]
-        forecast_days.append({
-            "date": date,
-            "max_temperature_c": daily_data["temperature_2m_max"][index],
-            "min_temperature_c": daily_data["temperature_2m_min"][index],
-            "rain_probability_percent": daily_data["precipitation_probability_max"][index],
-            "condition": WEATHER_CODE_DESCRIPTIONS.get(weather_code, "Unknown"),
-        })
+        forecast_days.append(
+            {
+                "date": date,
+                "max_temperature_c": daily_data["temperature_2m_max"][index],
+                "min_temperature_c": daily_data["temperature_2m_min"][index],
+                "rain_probability_percent": daily_data["precipitation_probability_max"][index],
+                "condition": WEATHER_CODE_DESCRIPTIONS.get(weather_code, "Unknown"),
+            }
+        )
     return forecast_days
 
 

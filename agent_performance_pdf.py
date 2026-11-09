@@ -30,7 +30,9 @@ def build_styles():
         "title": ParagraphStyle("Title", parent=base_styles["Title"], fontSize=20, spaceAfter=10),
         "heading": ParagraphStyle("Heading", parent=base_styles["Heading2"], fontSize=14, spaceBefore=12, spaceAfter=6),
         "body": ParagraphStyle("Body", parent=base_styles["BodyText"], fontSize=10, leading=14, spaceAfter=6),
-        "bullet": ParagraphStyle("Bullet", parent=base_styles["BodyText"], fontSize=10, leading=14, leftIndent=12, spaceAfter=3),
+        "bullet": ParagraphStyle(
+            "Bullet", parent=base_styles["BodyText"], fontSize=10, leading=14, leftIndent=12, spaceAfter=3
+        ),
     }
 
 
@@ -140,7 +142,9 @@ def build_story(styles, results):
 
     # 3. Test results table
     story.append(Paragraph("3. Test Results", styles["heading"]))
-    table_rows = [["ID", "Test name", "Time (s)", "JSON", "Sections", "Itinerary", "Budget limit", "Budget math", "Result"]]
+    table_rows = [
+        ["ID", "Test name", "Time (s)", "JSON", "Sections", "Itinerary", "Budget limit", "Budget math", "Result"]
+    ]
     for case in test_cases:
         result = results.get(case["id"])
         if result is None:

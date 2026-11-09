@@ -137,9 +137,7 @@ def search_hotels_api(
     matching_hotels = [
         hotel
         for hotel in load_hotels()
-        if hotel["city"].lower() == city_lower
-        and hotel["stars"] >= min_stars
-        and hotel["price_per_night"] <= max_price
+        if hotel["city"].lower() == city_lower and hotel["stars"] >= min_stars and hotel["price_per_night"] <= max_price
     ]
 
     if sort_by == "price_low":
@@ -209,9 +207,7 @@ def build_itinerary(
     wanted_types = {type_name.strip().lower() for type_name in interests.split(",") if type_name.strip()}
 
     all_city_places = [
-        place
-        for place in load_places()
-        if place["city"].lower() == city_lower and place["rating"] >= min_rating
+        place for place in load_places() if place["city"].lower() == city_lower and place["rating"] >= min_rating
     ]
     all_city_places.sort(key=lambda place: place["rating"], reverse=True)
 
@@ -261,8 +257,7 @@ def build_itinerary(
         )
     if len(selected_places) < needed_place_count:
         messages.append(
-            f"Only {len(selected_places)} places found, {needed_place_count} were needed. "
-            "Try lowering the rating."
+            f"Only {len(selected_places)} places found, {needed_place_count} were needed. " "Try lowering the rating."
         )
     if top_hotel is None:
         messages.append("No hotel matched these filters in this city, so hotel cost is not included.")

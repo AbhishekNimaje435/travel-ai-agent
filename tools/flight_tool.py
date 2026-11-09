@@ -42,8 +42,7 @@ def filter_flights_by_route(
     return [
         flight
         for flight in flights
-        if flight["from"].lower() == source_lower
-        and flight["to"].lower() == destination_lower
+        if flight["from"].lower() == source_lower and flight["to"].lower() == destination_lower
     ]
 
 

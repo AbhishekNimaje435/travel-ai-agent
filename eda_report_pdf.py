@@ -22,7 +22,9 @@ def build_styles():
         "title": ParagraphStyle("Title", parent=base_styles["Title"], fontSize=20, spaceAfter=10),
         "heading": ParagraphStyle("Heading", parent=base_styles["Heading2"], fontSize=14, spaceBefore=12, spaceAfter=6),
         "body": ParagraphStyle("Body", parent=base_styles["BodyText"], fontSize=10, leading=14, spaceAfter=6),
-        "bullet": ParagraphStyle("Bullet", parent=base_styles["BodyText"], fontSize=10, leading=14, leftIndent=12, spaceAfter=3),
+        "bullet": ParagraphStyle(
+            "Bullet", parent=base_styles["BodyText"], fontSize=10, leading=14, leftIndent=12, spaceAfter=3
+        ),
     }
 
 
@@ -77,11 +79,7 @@ def build_story(styles):
 
     # 2. Data quality
     story.append(Paragraph("2. Data Quality", styles["heading"]))
-    story.append(
-        Paragraph(
-            "<b>Missing values:</b> None in any dataset. All 18 columns are complete.", styles["body"]
-        )
-    )
+    story.append(Paragraph("<b>Missing values:</b> None in any dataset. All 18 columns are complete.", styles["body"]))
     story.append(
         Paragraph(
             "<b>Duplicates:</b> No duplicate IDs (flight_id, hotel_id, place_id). Every record is unique.",
