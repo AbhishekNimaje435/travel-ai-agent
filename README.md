@@ -2,7 +2,7 @@
 
 An agentic AI travel planner built with **LangChain**, **Groq (LLM)**, **FastAPI**, and a custom **HTML/CSS/JavaScript** frontend. Describe your trip in plain terms, and the AI agent decides which tools to call (flights, hotels, attractions, weather, and budget) to build a complete, budget-aware travel plan. Browse hotels, attractions, and day-wise itineraries instantly, save favourites, keep your trip plans, and chat with a travel assistant.
 
-🔗 **Live demo:** [https://travel-ai-agent-3llr.onrender.com]
+🔗 **Live demo:** [https://travel-ai-agent-3llr.onrender.com](https://travel-ai-agent-3llr.onrender.com)
 
 > The free hosting plan sleeps after inactivity. The first load can take 30 to 60 seconds.
 
@@ -117,6 +117,9 @@ travel_ai_agent/
 │   ├── script.js             # Navigation, search, hotels, places, itinerary
 │   ├── storage.js            # Favourites and saved trips (localStorage)
 │   └── chat.js               # Chat with AI panel
+├── agent_evaluation.py       # Automated agent tests and checks
+├── agent_evaluation_results.csv
+├── raw_results/              # Full agent output for each test
 ├── api.py                    # FastAPI backend and API routes
 ├── app.py                    # Earlier Streamlit version (kept for reference)
 ├── requirements.txt
@@ -219,10 +222,36 @@ Open **http://127.0.0.1:8000** in your browser.
 
 ## 📊 Evaluation and Testing
 
-- **Tool outputs:** Each tool was tested with real queries (for example, Hyderabad to Goa flights, Goa hotels with 4+ stars under ₹5000, Kolkata places with 4.0+ rating). Results were checked against the JSON data.
-- **Budget calculation:** Checked manually for a 3-day Goa trip (flight ₹2,907, 2 nights × ₹1,232, 3 days × ₹1,500 = ₹9,871).
-- **Agent behaviour:** Tested with several queries. Issues found and fixed included repeated tool calls, invented activities, a past date being used for a future trip, and places repeating across days.
-- **Frontend:** Tested all tabs, the sidebar pages, favourites, saved trips, and the chat panel on local and live URLs.
+### Automated agent evaluation
+
+`agent_evaluation.py` runs 12 test queries through the agent and checks each result (budget, itinerary days, places, star and amenity filters, over-budget warning, invalid-city refusal).
+
+```bash
+python agent_evaluation.py              # run tests not yet saved as successful
+python agent_evaluation.py --recheck    # re-run checks on saved outputs, without calling the LLM
+```
+
+Results are saved in `agent_evaluation_results.csv`, and the full output of each test is in `raw_results/`.
+
+**Final run: 4 of 12 tests passed.**
+
+| Result | Tests |
+|---|---|
+| Pass | T01 (basic Goa trip), T04 (over-budget warning), T05 (pool filter), T12 (invalid city refused) |
+| Fail | T02, T03, T06, T07, T08, T09, T10, T11 |
+
+**Key findings:**
+- **Budget arithmetic error (T03):** The LLM added the total wrongly (21,855 instead of 20,855). The code now recalculates the total, and the LLM's value is kept as `llm_reported_total`.
+- **Repeated places (T06, T07):** The agent sometimes put the same place on more than one day.
+- **Inconsistent limit disclosure (T02, T03, T06, T10):** When the dataset has fewer places than the trip needs, the agent does not always say so.
+- **Under-use of available places (T09, T11):** The agent used fewer places than the dataset had.
+- **Weak interest matching (T08):** Some places returned did not match the requested interests.
+- **Dataset quality (T11):** Some records are inconsistent, for example a 5-star hotel priced as a budget stay.
+
+**Limitations of the evaluation:**
+- The limited-places check looks for words like "only" and "available", so it can match unrelated text.
+- The vegetarian check (T10) confirms only that the word appears, not that every item is vegetarian.
+- Groq's daily token limit forced the tests to run across several sessions, and some tests ran on a different provider, so not all results are directly comparable.
 
 ---
 
@@ -250,7 +279,7 @@ The main user interface is a custom frontend in the `frontend/` folder, served b
 
 The data is small (30 to 40 records per dataset) and read-only, so JSON files are loaded directly and filtered in Python. Favourites and saved trips are stored in the browser's `localStorage`.
 
-**Why not SQL:** A database adds setup and maintenance without a clear benefit at this size. The schema is documented in the data and the code, and the sample data has no duplicate IDs (checked by `eda_analysis.py`).
+**Why not SQL:** A database adds setup and maintenance without a clear benefit at this size. The sample data has no duplicate IDs, which was checked during data exploration.
 
 **What would change with SQL:** Saved trips and favourites would need user accounts and a server-side database (SQLite for a demo, or PostgreSQL for production). Normalized tables would hold `users`, `trips`, `favourites`, `hotels`, `places`, and `flights`, with indexes on city and route columns. This is listed under Future Scope.
 
@@ -266,11 +295,14 @@ The data is small (30 to 40 records per dataset) and read-only, so JSON files ar
 - **Free-tier limits:** The Groq free tier has token-per-minute and daily limits, so heavy use may need a short wait.
 - **Free hosting:** Render's free plan sleeps after inactivity, so the first request can be slow.
 - **Browser-only storage:** Favourites and saved trips are stored per browser. They do not sync across devices.
+- **Evaluation coverage:** The automated tests cover 12 queries. Some checks are approximate, as described in the Evaluation section.
 
 ---
 
 ## 🔮 Future Scope
 
+- Fix the agent issues found in evaluation: repeated places, limited-places disclosure, and interest matching
+- Clean up dataset records (hotel stars and prices, place names and types) and add more places for Goa and Kolkata
 - User accounts and cloud database for saved trips and favourites
 - Live flight and hotel data through APIs
 - Multi-city and round-trip itineraries
